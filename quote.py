@@ -1,7 +1,7 @@
 import typing
 from copy import copy, deepcopy
 from bs4 import BeautifulSoup
-from utils import benchmark, normalize
+from utils import benchmark, normalize 
 from const import *
 
 
