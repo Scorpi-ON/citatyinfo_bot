@@ -1,0 +1,7 @@
+python-dotenv
+httpx
+pyrogram
+tgcrypto
+uvloop
+bs4
+lxml

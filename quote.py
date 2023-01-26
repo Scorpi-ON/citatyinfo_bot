@@ -1,0 +1,113 @@
+import typing
+from copy import copy, deepcopy
+from bs4 import BeautifulSoup
+from utils import benchmark, normalize
+from const import *
+
+
+class TaxonomyElem:
+    def __init__(self, title, category_url=None):
+        self.title = title
+        self.category_url = category_url
+        self.__content = []
+
+    def add_content(self, text, url=None):
+        self.__content.append({'text': text, 'url': url} if url else text)
+        return self
+
+
+class Quote:
+    TAXONOMY_TEMPLATES = {
+        'Автор цитаты': TaxonomyElem('©️ Автор', BASE_CATEGORY_URL % 'man'),
+        'Автор неизвестен': TaxonomyElem('©️ Автор', BASE_CATEGORY_URL % 'man')
+            .add_content('неизвестен', BASE_URL % 'other'),
+        'Цитируемый персонаж': TaxonomyElem('💬 Цитируемые персонажи'),
+        'Исполнители': TaxonomyElem('🎤 Исполнители', BASE_CATEGORY_URL % 'music'),
+        'Цитата из книги': TaxonomyElem('📖 Произведение', BASE_CATEGORY_URL % 'book'),
+        'Цитата из фильма': TaxonomyElem('🎬 Фильм', BASE_CATEGORY_URL % 'movie'),
+        'Цитата из мультфильма': TaxonomyElem('🧸 Мультфильм', BASE_CATEGORY_URL % 'cartoon'),
+        'Цитата из сериала': TaxonomyElem('🎥 Сериал', BASE_CATEGORY_URL % 'series'),
+        'Цитата из телешоу': TaxonomyElem('📺 Телешоу', BASE_CATEGORY_URL % 'tv'),
+        'Цитата из спектакля': TaxonomyElem('🎭 Спектакль', BASE_CATEGORY_URL % 'theater'),
+        'Цитата из игры': TaxonomyElem('🎮 Игра', BASE_CATEGORY_URL % 'game'),
+        'Цитата из комикса': TaxonomyElem('🦸🏻\u200d♂️ Комикс', BASE_CATEGORY_URL % 'comics'),
+        'Цитата из аниме': TaxonomyElem('ツ Аниме', BASE_CATEGORY_URL % 'anime'),
+        'Песня': TaxonomyElem('🎵 Песня', BASE_CATEGORY_URL % 'music'),
+        'Самиздат': TaxonomyElem('✍🏻 Самиздат', BASE_CATEGORY_URL % 'self'),
+        'Притча': TaxonomyElem('☯ Притча', BASE_URL % 'pritchi'),
+        'Фольклор': TaxonomyElem('📜 Фольклор', BASE_URL % 'po')
+    }
+
+    def __init__(self, html_page: str):
+        quote_tag = BeautifulSoup(html_page, features='lxml').article
+        self._content_tag, self._rating_tag, _ = quote_tag.findChildren(recursive=False)
+        self._main_body_tag = self._content_tag.find('div', class_='field-item').extract()
+
+    @property
+    def text(self) -> str:
+        return self._main_body_tag.text
+
+    @property
+    def topics(self) -> typing.Generator[dict, None, None]:
+        topics = []
+        topics_tag = self._main_body_tag.find('div', class_='node__topics')
+        if topics_tag is not None:
+            topics.extend(topics_tag.find_all('a'))       # основные темы, приведённые под цитатой
+        topics.extend(self._main_body_tag.find_all('a'))  # темы, встроенные в текст цитаты
+        for num, topic in enumerate(topics):
+            topics[num] = None
+            topic = {'text': topic.text, 'url': topic['href']}  # преобразуем теги в удобные для использования словари
+            if topic not in topics:                             # и отсеиваем, если они уже есть в списке
+                yield topic
+
+    @property
+    def rating(self) -> typing.Tuple[str]:
+        rating_tag = self._rating_tag.find(
+            'div', class_='rate-widget-rating__inner')
+        sum, neg, pos = rating_tag.findChildren(recursive=False)
+        return sum.text.strip(), neg.text, pos.text
+
+    @property
+    def has_original(self) -> bool:
+        return bool(self._content_tag.find('div', class_='quote__original'))
+
+    @property
+    def taxonomy(self) -> typing.Generator[TaxonomyElem, None, None]:
+        taxonomy_tags = self._content_tag.find_all(
+            'div', class_='field-type-taxonomy-term-reference',
+            recursive=False)
+        for tag in taxonomy_tags:
+            key = tag.a['title']
+            taxonomy_elem = deepcopy(self.TAXONOMY_TEMPLATES[key])
+            if key != 'Автор неизвестен':
+                for link_tag in tag.find_all('a'):
+                    taxonomy_elem.add_content(link_tag.text, link_tag['href'])
+            yield taxonomy_elem
+
+    @property
+    def images(self) -> typing.Generator[str, None, None]:
+        for img_tag in self._content_tag.find_all('img'):
+            yield img_tag['src']
+
+    @property
+    def explanation(self) -> str | None:
+        explanation_tag = self._content_tag.find(
+            'div', class_='field-name-field-description', recursive=False)
+        if explanation_tag is not None:
+            return explanation_tag.text.strip().splitlines()[-1]  # отсекаем надпись «Пояснение к цитате»
+
+    @property
+    def series(self) -> str | None:
+        series_tag = self._content_tag.find(
+            'div', class_='node__series', recursive=False)
+        if series_tag is not None:
+            for serie_tag in series_tag.find_all('div', class_='field-item'):
+                if link_tag := serie_tag.find('a'):
+                    yield {'text': link_tag.text, 'url': link_tag['href']}
+                else:
+                    yield serie_tag.text.strip()
+
+
+with open('cache/q13859.html', 'r') as html_file:
+    quote = Quote(html_file.read())
+print(benchmark(lambda: [_ for _ in quote.series], 10))
