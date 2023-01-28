@@ -15,6 +15,18 @@ class TaxonomyElem:
         self.content.append({'text': text, 'url': url} if url else text)
         return self
 
+    def __str__(self):
+        if self.category_url is None:
+            text = f'**{self.title}:** '
+        else:
+            text = f'**[{self.title}]({self.category_url}):** '
+        for content_item in self.content:
+            if isinstance(content_item, dict):
+                text += f'[{content_item["text"]}]({content_item["url"]}), '
+            else:
+                text += f'{content_item}, '
+        return text.removesuffix(', ')
+
 
 class Quote:
     TAXONOMY_TEMPLATES = {
@@ -110,3 +122,24 @@ class Quote:
                     yield {'text': link_tag.text, 'url': link_tag['href']}
                 else:
                     yield serie_tag.text.strip()
+
+    def __str__(self):
+        if isinstance(text := self.text, tuple):
+            text = f'**Оригинал:**\n{text[0]}\n\n**Перевод:**\n{text[1]}'
+        text += '\n\n'
+        for taxonomy_elem in self.taxonomy:
+            text += f'{taxonomy_elem}\n'
+        rating = self.rating
+        if rating != ('0', '0', '0'):
+            text += '**⭐ Рейтинг:** '
+            if rating[1] == '0':
+                text += rating[0]
+            elif rating[2] == '0':
+                text += f'-{rating[0]}'
+            else:
+                text += f'{rating[2]} - {rating[1]} = {rating[0]}'
+            text += '\n'
+        text += '\n'
+        for topic in self.topics:
+            text += f'[#{topic["text"]}]({topic["url"]}) '
+        return utils.normalize(text)
