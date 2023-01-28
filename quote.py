@@ -9,10 +9,10 @@ class TaxonomyElem:
     def __init__(self, title, category_url=None):
         self.title = title
         self.category_url = category_url
-        self.__content = []
+        self.content = []
 
     def add_content(self, text, url=None):
-        self.__content.append({'text': text, 'url': url} if url else text)
+        self.content.append({'text': text, 'url': url} if url else text)
         return self
 
 
@@ -41,11 +41,15 @@ class Quote:
     def __init__(self, html_page: str):
         quote_tag = BeautifulSoup(html_page, features='lxml').article
         self._content_tag, self._rating_tag, _ = quote_tag.findChildren(recursive=False)
-        self._main_body_tag = self._content_tag.find('div', class_='field-item').extract()
+        self._main_body_tag = self._content_tag.findChildren(recursive=False)[0].extract()
 
     @property
-    def text(self) -> str:
-        return self._main_body_tag.text
+    def text(self) -> str | typing.Tuple[str]:
+        match self._main_body_tag.findChildren(recursive=False):
+            case original_tag, translated_tag:
+                return original_tag.text.strip(), translated_tag.text.strip()
+            case (text_tag,):
+                return text_tag.text.strip()
 
     @property
     def topics(self) -> typing.Generator[dict, None, None]:
@@ -77,7 +81,7 @@ class Quote:
             'div', class_='field-type-taxonomy-term-reference',
             recursive=False)
         for tag in taxonomy_tags:
-            key = tag.a['title']
+            key = tag.a.get('title', 'Фольклор')  # ссылки на пословицы не имеют атрибута title
             taxonomy_elem = deepcopy(self.TAXONOMY_TEMPLATES[key])
             if key != 'Автор неизвестен':
                 for link_tag in tag.find_all('a'):
@@ -106,8 +110,3 @@ class Quote:
                     yield {'text': link_tag.text, 'url': link_tag['href']}
                 else:
                     yield serie_tag.text.strip()
-
-
-with open('cache/q13859.html', 'r') as html_file:
-    quote = Quote(html_file.read())
-print(benchmark(lambda: [_ for _ in quote.series], 10))
