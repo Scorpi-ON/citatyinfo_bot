@@ -1,7 +1,7 @@
 import typing
-from copy import copy, deepcopy
+from copy import deepcopy
 from bs4 import BeautifulSoup
-from utils import benchmark, normalize
+import utils
 from const import *
 
 
@@ -34,7 +34,7 @@ class Quote:
         'Автор неизвестен': TaxonomyElem('©️ Автор', BASE_CATEGORY_URL % 'man')
             .add_content('неизвестен', BASE_URL % 'other'),
         'Цитируемый персонаж': TaxonomyElem('💬 Цитируемые персонажи'),
-        'Исполнители': TaxonomyElem('🎤 Исполнители', BASE_CATEGORY_URL % 'music'),
+        'Исполнитель': TaxonomyElem('🎤 Исполнители', BASE_CATEGORY_URL % 'music'),
         'Цитата из книги': TaxonomyElem('📖 Произведение', BASE_CATEGORY_URL % 'book'),
         'Цитата из фильма': TaxonomyElem('🎬 Фильм', BASE_CATEGORY_URL % 'movie'),
         'Цитата из мультфильма': TaxonomyElem('🧸 Мультфильм', BASE_CATEGORY_URL % 'cartoon'),
