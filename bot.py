@@ -17,6 +17,7 @@ from quote import Quote
 CONF = dotenv.dotenv_values()
 uvloop.install()
 app = Client('TestBot')
+http_client = httpx.AsyncClient()
 
 
 @app.on_message(filters.command('start'))
@@ -32,8 +33,7 @@ async def help(client: Client, message: Message):
 
 @app.on_message(filters.command('random'))
 async def random(client: Client, message: Message):
-    async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(const.RANDOM_URL)
+    response = await http_client.get(const.RANDOM_URL)
     if response.status_code == 200:
         quote = Quote(response.text)
         photos = [InputMediaPhoto(url) for url in quote.images]
@@ -52,8 +52,7 @@ async def random(client: Client, message: Message):
 
 @app.on_message(filters.regex(const.QUOTE_PATTERN))
 async def quote_by_link(client: Client, message: Message):
-    async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(message.text)
+    response = await http_client.get(message.text)
     if response.status_code == 200:
         quote = Quote(response.text)
         photos = [InputMediaPhoto(url) for url in quote.images]
@@ -73,8 +72,7 @@ async def quote_by_link(client: Client, message: Message):
 @app.on_callback_query(filters.regex(const.ORIGINAL_CALLBACK_PATTERN))
 async def original_request(client: Client, callback_query: CallbackQuery):
     id, = const.ORIGINAL_CALLBACK_PATTERN.match(callback_query.data).groups()
-    async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(const.AJAX_URL % id)
+    response = await http_client.get(const.AJAX_URL % id)
     if response.status_code == 200:
         original_text = BeautifulSoup(response.json()[1]['data'], 'lxml').text
         await callback_query.answer(
