@@ -9,6 +9,7 @@ QUOTE_URL = BASE_URL % 'quote/%s'
 PARABLE_URL = BASE_URL % 'pritcha/%s'
 PROVERB_URL = BASE_URL % 'po/%s'
 AJAX_URL = BASE_URL % 'ajax/en_body/%s'
+RANDOM_URL = BASE_URL % 'random'
 
 # RegExp
 QUOTE_PATTERN = re.compile(
