@@ -13,8 +13,8 @@ import utils
 from quote import Quote
 
 
-uvloop.install()
 CONF = dotenv.dotenv_values()
+uvloop.install()
 app = Client('TestBot')
 
 
