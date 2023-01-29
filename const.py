@@ -7,7 +7,7 @@ SEARCH_URL = BASE_URL % 'search/site/%s'
 TOP_RATING_URL = BASE_URL % 'rating/'
 QUOTE_URL = BASE_URL % 'quote/%s'
 PARABLE_URL = BASE_URL % 'pritcha/%s'
-PROVERB_URL = BASE_URL % 'proverb/%s'
+PROVERB_URL = BASE_URL % 'po/%s'
 AJAX_URL = BASE_URL % 'ajax/en_body/%s'
 
 # RegExp
