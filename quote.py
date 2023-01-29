@@ -1,6 +1,10 @@
+from enum import Enum
 import typing
 from copy import deepcopy
+
 from bs4 import BeautifulSoup
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 import utils
 from const import *
 
@@ -29,6 +33,7 @@ class TaxonomyElem:
 
 
 class Quote:
+    TYPES = Enum('Quote types', 'quote proverb parable')
     TAXONOMY_TEMPLATES = {
         'Автор цитаты': TaxonomyElem('©️ Автор', BASE_CATEGORY_URL % 'man'),
         'Автор неизвестен': TaxonomyElem('©️ Автор', BASE_CATEGORY_URL % 'man')
@@ -47,13 +52,35 @@ class Quote:
         'Песня': TaxonomyElem('🎵 Песня', BASE_CATEGORY_URL % 'music'),
         'Самиздат': TaxonomyElem('✍🏻 Самиздат', BASE_CATEGORY_URL % 'self'),
         'Притча': TaxonomyElem('☯ Притча', BASE_URL % 'pritchi'),
-        'Фольклор': TaxonomyElem('📜 Фольклор', BASE_URL % 'po')
+        'Фольклор': TaxonomyElem('📜 Фольклор', BASE_URL % 'po'),
+        'Рейтинг': TaxonomyElem('⭐ Рейтинг'),
+        'Эпизод': TaxonomyElem('📀 Эпизод')
     }
 
     def __init__(self, html_page: str):
-        quote_tag = BeautifulSoup(html_page, features='lxml').article
+        soup = BeautifulSoup(html_page, 'lxml')
+        quote_tag = soup.article
+        self.id = quote_tag['id'].removeprefix('node-')
+        if 'node-po' in quote_tag['class']:
+            self.type = Quote.TYPES.proverb
+        elif 'node-pritcha' in quote_tag['class']:
+            self.type = Quote.TYPES.parable
+            self.header = soup.h1.text
+        else:
+            self.type = Quote.TYPES.quote
         self._content_tag, self._rating_tag, _ = quote_tag.findChildren(recursive=False)
         self._main_body_tag = self._content_tag.findChildren(recursive=False)[0].extract()
+
+    @property
+    def url(self) -> str:
+        match self.type:
+            case Quote.TYPES.quote:
+                url = QUOTE_URL
+            case Quote.TYPES.parable:
+                url = PARABLE_URL
+            case Quote.TYPES.proverb:
+                url = PROVERB_URL
+        return url % self.id
 
     @property
     def text(self) -> str | typing.Tuple[str]:
@@ -64,41 +91,68 @@ class Quote:
                 return text_tag.text.strip()
 
     @property
+    def _rating(self) -> TaxonomyElem | None:
+        rating_tag = self._rating_tag.find(
+            'div', class_='rate-widget-rating__inner')
+        sum, neg, pos = rating_tag.findChildren(recursive=False)
+        sum, neg, pos = sum.text.strip(), neg.text, pos.text
+        if (sum, neg, pos) != ('0', '0', '0'):
+            rating_taxonomy = deepcopy(Quote.TAXONOMY_TEMPLATES['Рейтинг'])
+            if neg == '0':
+                rating_taxonomy.add_content(sum)
+            elif pos == '0':
+                rating_taxonomy.add_content(f'-{sum}')
+            else:
+                rating_taxonomy.add_content(f'{pos} - {neg} = {sum}')
+            return rating_taxonomy
+
+    @property
+    def _series(self) -> TaxonomyElem | None:
+        if self.type is Quote.TYPES.quote:
+            series_tag = self._content_tag.find(
+                'div', class_='node__series', recursive=False)
+            if series_tag is not None:
+                taxonomy_elem = deepcopy(Quote.TAXONOMY_TEMPLATES['Эпизод'])
+                for serie_tag in series_tag.find_all('div', class_='field-item'):
+                    if link_tag := serie_tag.find('a'):
+                        taxonomy_elem.add_content(link_tag.text, link_tag['href'])
+                    else:
+                        taxonomy_elem.add_content(serie_tag.text.strip())
+                return taxonomy_elem
+
+    @property
+    def taxonomy(self) -> typing.Generator[TaxonomyElem, None, None]:
+        if self.type is Quote.TYPES.parable:
+            yield deepcopy(Quote.TAXONOMY_TEMPLATES['Притча']).add_content(self.header)
+        else:
+            taxonomy_tags = self._content_tag.find_all(
+                'div', class_='field-type-taxonomy-term-reference',
+                recursive=False)
+            for tag in taxonomy_tags:
+                key = tag.a.get('title', 'Фольклор')  # ссылки на пословицы не имеют атрибута title
+                taxonomy_elem = deepcopy(Quote.TAXONOMY_TEMPLATES[key])
+                if key != 'Автор неизвестен':
+                    for link_tag in tag.find_all('a'):
+                        taxonomy_elem.add_content(link_tag.text, link_tag['href'])
+                yield taxonomy_elem
+            if series := self._series:
+                yield series
+        if rating := self._rating:
+            yield rating
+
+    @property
     def topics(self) -> typing.Generator[dict, None, None]:
         topics = []
-        topics_tag = self._main_body_tag.find('div', class_='node__topics')
+        topics_tag = self._content_tag.find('div', class_='node__topics')
         if topics_tag is not None:
             topics.extend(topics_tag.find_all('a'))       # основные темы, приведённые под цитатой
         topics.extend(self._main_body_tag.find_all('a'))  # темы, встроенные в текст цитаты
         for num, topic in enumerate(topics):
-            topics[num] = None
-            topic = {'text': topic.text, 'url': topic['href']}  # преобразуем теги в удобные для использования словари
-            if topic not in topics:                             # и отсеиваем, если они уже есть в списке
+            topic = {'text': topic.text.lower().replace(', ', ' #'),
+                     'url': topic['href']}  # преобразуем теги в удобные для использования словари
+            if topic['url'] not in topics:  # и отсеиваем, если такие ссылки (не текст,
                 yield topic
-
-    @property
-    def rating(self) -> typing.Tuple[str]:
-        rating_tag = self._rating_tag.find(
-            'div', class_='rate-widget-rating__inner')
-        sum, neg, pos = rating_tag.findChildren(recursive=False)
-        return sum.text.strip(), neg.text, pos.text
-
-    @property
-    def has_original(self) -> bool:
-        return bool(self._content_tag.find('div', class_='quote__original'))
-
-    @property
-    def taxonomy(self) -> typing.Generator[TaxonomyElem, None, None]:
-        taxonomy_tags = self._content_tag.find_all(
-            'div', class_='field-type-taxonomy-term-reference',
-            recursive=False)
-        for tag in taxonomy_tags:
-            key = tag.a.get('title', 'Фольклор')  # ссылки на пословицы не имеют атрибута title
-            taxonomy_elem = deepcopy(self.TAXONOMY_TEMPLATES[key])
-            if key != 'Автор неизвестен':
-                for link_tag in tag.find_all('a'):
-                    taxonomy_elem.add_content(link_tag.text, link_tag['href'])
-            yield taxonomy_elem
+            topics[num] = topic['url']      # т. к. он может отличаться) уже есть
 
     @property
     def images(self) -> typing.Generator[str, None, None]:
@@ -106,40 +160,39 @@ class Quote:
             yield img_tag['src']
 
     @property
+    def has_original(self) -> bool:
+        return bool(self._content_tag.find('div', class_='quote__original'))
+
+    @property
     def explanation(self) -> str | None:
         explanation_tag = self._content_tag.find(
             'div', class_='field-name-field-description', recursive=False)
         if explanation_tag is not None:
-            return explanation_tag.text.strip().splitlines()[-1]  # отсекаем надпись «Пояснение к цитате»
-
-    @property
-    def series(self) -> str | None:
-        series_tag = self._content_tag.find(
-            'div', class_='node__series', recursive=False)
-        if series_tag is not None:
-            for serie_tag in series_tag.find_all('div', class_='field-item'):
-                if link_tag := serie_tag.find('a'):
-                    yield {'text': link_tag.text, 'url': link_tag['href']}
-                else:
-                    yield serie_tag.text.strip()
+            return utils.normalize(
+                explanation_tag.text.strip().splitlines()[-1]  # отсекаем надпись «Пояснение к цитате»
+            )
 
     def __str__(self):
         if isinstance(text := self.text, tuple):
             text = f'**Оригинал:**\n{text[0]}\n\n**Перевод:**\n{text[1]}'
+        if self.type is Quote.TYPES.parable:
+            text = f'**{self.header}**\n{text}'
         text += '\n\n'
         for taxonomy_elem in self.taxonomy:
             text += f'{taxonomy_elem}\n'
-        rating = self.rating
-        if rating != ('0', '0', '0'):
-            text += '**⭐ Рейтинг:** '
-            if rating[1] == '0':
-                text += rating[0]
-            elif rating[2] == '0':
-                text += f'-{rating[0]}'
-            else:
-                text += f'{rating[2]} - {rating[1]} = {rating[0]}'
-            text += '\n'
         text += '\n'
         for topic in self.topics:
             text += f'[#{topic["text"]}]({topic["url"]}) '
         return utils.normalize(text)
+
+    @property
+    def keyboard(self) -> InlineKeyboardMarkup | None:
+        first_row = []
+        if explaination := self.explanation:
+            first_row.append(InlineKeyboardButton('🔮 Пояснение', explaination))
+        if self.has_original:
+            first_row.append(InlineKeyboardButton('🇬🇧 Оригинал', f'o{self.id}'))
+        return InlineKeyboardMarkup([
+            first_row,
+            [InlineKeyboardButton('🔗 Открыть', url=self.url)]
+        ])
