@@ -4,9 +4,11 @@ from datetime import datetime
 
 def normalize(text: str) -> str:
     '''
-    Исправляет неправильные unicode-символы в тексте, полученном из HTML.
+    Исправляет неправильные unicode-символы в тексте, полученном из HTML,
+    и слегка сокращает его.
     '''
-    text = unicodedata.normalize('NFKC', text).strip()
+    text = unicodedata.normalize('NFKC', text)
+    text = text.strip().replace('...', '…').replace('\n\n\n', '\n\n')
     return text
 
 
