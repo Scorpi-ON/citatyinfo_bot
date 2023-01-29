@@ -188,8 +188,10 @@ class Quote:
     @property
     def keyboard(self) -> InlineKeyboardMarkup | None:
         first_row = []
-        if explaination := self.explanation:
-            first_row.append(InlineKeyboardButton('🔮 Пояснение', explaination))
+        if explanation := self.explanation:
+            if len(explanation) > 64:
+                explanation = explanation[:63] + '…'
+            first_row.append(InlineKeyboardButton('🔮 Пояснение', explanation))
         if self.has_original:
             first_row.append(InlineKeyboardButton('🇬🇧 Оригинал', f'o{self.id}'))
         return InlineKeyboardMarkup([
