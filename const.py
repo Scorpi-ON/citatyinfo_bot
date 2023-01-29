@@ -11,8 +11,10 @@ PROVERB_URL = BASE_URL % 'po/%s'
 AJAX_URL = BASE_URL % 'ajax/en_body/%s'
 
 # RegExp
-BASE_URL_PATTERN = re.compile(r'https://citaty.info/([/\.\-\?=\w]+)?$')
-PROVERBS_ALT_URL_PATTERN = re.compile(r'https://citaty.info/po/[/\.\-\?=\w]+$')
+QUOTE_PATTERN = re.compile(
+    r'^https://citaty.info/(?:quote|parable|po|proverb)/(\d+)(?:#comment(?:-form|s))?$'
+)
+ORIGINAL_CALLBACK_PATTERN = re.compile(r'o(\d+)')
 URL_HAS_PAGE_PARAM_PATTERN = re.compile(r'[?&]page=(\d+)$')
 
 # Commands
