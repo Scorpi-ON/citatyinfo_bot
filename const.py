@@ -7,17 +7,23 @@ SEARCH_URL = BASE_URL % 'search/site/%s'
 TOP_RATING_URL = BASE_URL % 'rating/'
 QUOTE_URL = BASE_URL % 'quote/%s'
 PARABLE_URL = BASE_URL % 'pritcha/%s'
-PROVERB_URL = BASE_URL % 'proverb/%s'
+PROVERB_URL = BASE_URL % 'po/%s'
 AJAX_URL = BASE_URL % 'ajax/en_body/%s'
 
 # RegExp
-CALLBACK_ID_PATTERN = re.compile(r'^(p[ar] )?\d+$')
-PAGE_PATTERN = re.compile(r'page (\d+)$')
-AJAX_PATTERN = re.compile(r'ajax (\d+)$')
-DESCRIPTION_PATTERN = re.compile(r'desc (\d+)')
-BASE_URL_PATTERN = re.compile(r'https://citaty.info/([/\.\-\?=\w]+)?$')
-PROVERBS_ALT_URL_PATTERN = re.compile(r'https://citaty.info/po/[/\.\-\?=\w]+$')
+QUOTE_PATTERN = re.compile(
+    r'^https://citaty.info/(?:quote|parable|po|proverb)/(\d+)(?:#comment(?:-form|s))?$'
+)
+ORIGINAL_CALLBACK_PATTERN = re.compile(r'o(\d+)')
 URL_HAS_PAGE_PARAM_PATTERN = re.compile(r'[?&]page=(\d+)$')
+
+# Commands
+TOP_COMMANDS = {
+    'top': TOP_RATING_URL + 'best',
+    'top_month': TOP_RATING_URL + 'best/month',
+    'top_week': TOP_RATING_URL + 'best/week',
+    'antitop': TOP_RATING_URL + 'worst'
+}
 
 # User Agents
 # from faker import Faker
@@ -58,11 +64,3 @@ USER_AGENTS = (
         'AppleWebKit/531.23.5 (KHTML, like Gecko) Version/3.0.5 Mobile/8B115 '
         'Safari/6531.23.5'
 )
-
-# Commands
-TOP_COMMANDS = {
-    'top': TOP_RATING_URL + 'best',
-    'top_month': TOP_RATING_URL + 'best/month',
-    'top_week': TOP_RATING_URL + 'best/week',
-    'antitop': TOP_RATING_URL + 'worst'
-}
