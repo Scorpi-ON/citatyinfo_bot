@@ -1,6 +1,7 @@
 from enum import Enum
 import typing
 from copy import deepcopy
+from functools import cached_property
 
 from bs4 import BeautifulSoup
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -71,7 +72,7 @@ class Quote:
         self._content_tag, self._rating_tag, _ = quote_tag.findChildren(recursive=False)
         self._main_body_tag = self._content_tag.findChildren(recursive=False)[0].extract()
 
-    @property
+    @cached_property
     def url(self) -> str:
         match self.type:
             case Quote.TYPES.quote:
@@ -154,7 +155,7 @@ class Quote:
                 yield topic
             topics[num] = topic['url']      # т. к. он может отличаться) уже есть
 
-    @property
+    @cached_property
     def images(self) -> typing.Generator[str, None, None]:
         for img_tag in self._content_tag.find_all('img'):
             yield img_tag['src']
@@ -163,7 +164,7 @@ class Quote:
     def has_original(self) -> bool:
         return bool(self._content_tag.find('div', class_='quote__original'))
 
-    @property
+    @cached_property
     def explanation(self) -> str | None:
         explanation_tag = self._content_tag.find(
             'div', class_='field-name-field-description', recursive=False)
@@ -172,7 +173,8 @@ class Quote:
                 explanation_tag.text.strip().splitlines()[-1]  # отсекаем надпись «Пояснение к цитате»
             )
 
-    def __str__(self):
+    @cached_property
+    def __string_representation(self) -> str:
         if isinstance(text := self.text, tuple):
             text = f'**Оригинал:**\n{text[0]}\n\n**Перевод:**\n{text[1]}'
         if self.type is Quote.TYPES.parable:
@@ -185,7 +187,10 @@ class Quote:
             text += f'[#{topic["text"]}]({topic["url"]}) '
         return utils.normalize(text)
 
-    @property
+    def __str__(self):
+        return self.__string_representation
+
+    @cached_property
     def keyboard(self) -> InlineKeyboardMarkup | None:
         first_row = []
         if explanation := self.explanation:
