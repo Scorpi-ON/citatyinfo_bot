@@ -35,7 +35,7 @@ class TaxonomyElem:
 
 
 class Quote:
-    TYPES = Enum('Quote types', 'quote proverb parable')
+    TYPES = Enum('Quote types', 'quote po pritcha')
     TAXONOMY_TEMPLATES = {
         'Автор цитаты': TaxonomyElem('©️ Автор', BASE_CATEGORY_URL % 'man'),
         'Автор неизвестен': TaxonomyElem('©️ Автор', BASE_CATEGORY_URL % 'man')
@@ -64,9 +64,9 @@ class Quote:
         quote_tag = soup.article
         self.id = quote_tag['id'].removeprefix('node-')
         if 'node-po' in quote_tag['class']:
-            self.type = Quote.TYPES.proverb
+            self.type = Quote.TYPES.po
         elif 'node-pritcha' in quote_tag['class']:
-            self.type = Quote.TYPES.parable
+            self.type = Quote.TYPES.pritcha
             self.header = soup.h1.text
         else:
             self.type = Quote.TYPES.quote
@@ -78,10 +78,10 @@ class Quote:
         match self.type:
             case Quote.TYPES.quote:
                 url = QUOTE_URL
-            case Quote.TYPES.parable:
-                url = PARABLE_URL
-            case Quote.TYPES.proverb:
-                url = PROVERB_URL
+            case Quote.TYPES.pritcha:
+                url = PRITCHA_URL
+            case Quote.TYPES.po:
+                url = PO_URL
         return url % self.id
 
     @property
@@ -124,7 +124,7 @@ class Quote:
 
     @property
     def taxonomy(self) -> typing.Generator[TaxonomyElem, None, None]:
-        if self.type is Quote.TYPES.parable:
+        if self.type is Quote.TYPES.pritcha:
             yield deepcopy(Quote.TAXONOMY_TEMPLATES['Притча']).add_content(self.header)
         else:
             taxonomy_tags = self._content_tag.find_all(
@@ -181,7 +181,7 @@ class Quote:
     def __string_representation(self) -> str:
         if isinstance(text := self.text, tuple):
             text = f'**Оригинал:**\n{text[0]}\n\n**Перевод:**\n{text[1]}'
-        if self.type is Quote.TYPES.parable:
+        if self.type is Quote.TYPES.pritcha:
             text = f'**{self.header}**\n{text}'
         text += '\n\n'
         for taxonomy_elem in self.taxonomy:
@@ -198,8 +198,8 @@ class Quote:
     def keyboard(self) -> InlineKeyboardMarkup | None:
         first_row = []
         if explanation := self.explanation:
-            if len(explanation) > 64:
-                explanation = explanation[:63] + '…'
+            if explanation.__sizeof__() > 128:
+                explanation = f'e{self.type.name}/{self.id}'
             first_row.append(InlineKeyboardButton('🔮 Пояснение', explanation))
         if self.has_original:
             first_row.append(InlineKeyboardButton('🇬🇧 Оригинал', f'o{self.id}'))

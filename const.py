@@ -6,16 +6,17 @@ BASE_CATEGORY_URL = BASE_URL % '%s/quotes'
 SEARCH_URL = BASE_URL % 'search/site/%s'
 TOP_RATING_URL = BASE_URL % 'rating/'
 QUOTE_URL = BASE_URL % 'quote/%s'
-PARABLE_URL = BASE_URL % 'pritcha/%s'
-PROVERB_URL = BASE_URL % 'po/%s'
+PRITCHA_URL = BASE_URL % 'pritcha/%s'
+PO_URL = BASE_URL % 'po/%s'
 AJAX_URL = BASE_URL % 'ajax/en_body/%s'
 RANDOM_URL = BASE_URL % 'random'
 
 # Регулярки
 QUOTE_PATTERN = re.compile(
-    r'^https://citaty.info/(?:quote|parable|po|proverb)/(\d+)(?:#comment(?:-form|s))?$'
+    r'^https://citaty.info/(?:quote|pritcha|po|proverb)/(\d+)(?:#comment(?:-form|s))?$'
 )
 ORIGINAL_CALLBACK_PATTERN = re.compile(r'o(\d+)')
+EXPLANATION_CALLBACK_PATTERN = re.compile(r'e(?:quote|po|pritcha)\/\d+')
 URL_HAS_PAGE_PARAM_PATTERN = re.compile(r'[?&]page=(\d+)$')
 
 # Команды
