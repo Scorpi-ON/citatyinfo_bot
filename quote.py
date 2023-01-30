@@ -50,7 +50,7 @@ class Quote:
         'Цитата из спектакля': TaxonomyElem('🎭 Спектакль', BASE_CATEGORY_URL % 'theater'),
         'Цитата из игры': TaxonomyElem('🎮 Игра', BASE_CATEGORY_URL % 'game'),
         'Цитата из комикса': TaxonomyElem('🦸🏻\u200d♂️ Комикс', BASE_CATEGORY_URL % 'comics'),
-        'Цитата из аниме': TaxonomyElem('ツ Аниме', BASE_CATEGORY_URL % 'anime'),
+        'Цитата из аниме': TaxonomyElem('🥷🏻 Аниме', BASE_CATEGORY_URL % 'anime'),
         'Песня': TaxonomyElem('🎵 Песня', BASE_CATEGORY_URL % 'music'),
         'Самиздат': TaxonomyElem('✍🏻 Самиздат', BASE_CATEGORY_URL % 'self'),
         'Притча': TaxonomyElem('☯ Притча', BASE_URL % 'pritchi'),
