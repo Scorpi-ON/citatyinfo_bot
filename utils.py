@@ -8,7 +8,11 @@ def normalize(text: str) -> str:
     и слегка сокращает его.
     '''
     text = unicodedata.normalize('NFKC', text)
-    text = text.strip().replace('...', '…').replace('\n\n\n', '\n\n')
+    text = text.strip() \
+               .replace('...', '…') \
+               .replace('\n\n\n', '\n\n') \
+               .replace('\n ', '\n') \
+               .replace('  ', ' ')
     return text
 
 
