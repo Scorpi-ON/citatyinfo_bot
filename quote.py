@@ -4,7 +4,8 @@ from copy import deepcopy
 from functools import cached_property
 
 from bs4 import BeautifulSoup
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, \
+                           InputMediaPhoto
 
 import utils
 from const import *
@@ -156,9 +157,12 @@ class Quote:
             topics[num] = topic['url']      # т. к. он может отличаться) уже есть
 
     @cached_property
-    def images(self) -> typing.Generator[str, None, None]:
+    def images(self) -> typing.List[InputMediaPhoto] | None:
+        images = []
         for img_tag in self._content_tag.find_all('img'):
-            yield img_tag['src']
+            images.append(InputMediaPhoto(img_tag['src']))
+        if images:
+            return images
 
     @property
     def has_original(self) -> bool:

@@ -6,7 +6,7 @@ import httpx
 from bs4 import BeautifulSoup
 from pyrogram.client import Client
 from pyrogram import filters
-from pyrogram.types import Message, CallbackQuery, InputMediaPhoto
+from pyrogram.types import Message, CallbackQuery
 import aiofiles
 
 import const
@@ -36,11 +36,10 @@ async def random(client: Client, message: Message):
     response = await http_client.get(const.RANDOM_URL)
     if response.status_code == 200:
         quote = Quote(response.text)
-        photos = [InputMediaPhoto(url) for url in quote.images]
-        if photos:
-            message, = await message.reply_media_group(photos)
+        if quote.images:
+            message, = await message.reply_media_group(quote.images)
         await message.reply(
-            str(quote), quote=bool(photos),
+            str(quote), quote=bool(quote.images),
             reply_markup=quote.keyboard,
             disable_web_page_preview=True
         )
@@ -55,11 +54,10 @@ async def quote_by_link(client: Client, message: Message):
     response = await http_client.get(message.text)
     if response.status_code == 200:
         quote = Quote(response.text)
-        photos = [InputMediaPhoto(url) for url in quote.images]
-        if photos:
-            message, = await message.reply_media_group(photos)
+        if quote.images:
+            message, = await message.reply_media_group(quote.images)
         await message.reply(
-            str(quote), quote=bool(photos),
+            str(quote), quote=bool(quote.images),
             reply_markup=quote.keyboard,
             disable_web_page_preview=True
         )
