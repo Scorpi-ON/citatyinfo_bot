@@ -4,8 +4,7 @@ import dotenv
 import uvloop
 import httpx
 from bs4 import BeautifulSoup
-from pyrogram.client import Client
-from pyrogram import filters
+from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery
 import aiofiles
 
@@ -15,6 +14,9 @@ from quote import Quote
 
 
 CONF = dotenv.dotenv_values()
+CALLBACK_CACHE_TIME = 120
+ERROR_CALLBACK_CACHE_TIME = 30
+
 uvloop.install()
 app = Client('TestBot')
 http_client = httpx.AsyncClient()
@@ -76,12 +78,30 @@ async def original_request(client: Client, callback_query: CallbackQuery):
         await callback_query.answer(
             utils.normalize(original_text),
             show_alert=True,
-            cache_time=120
+            cache_time=CALLBACK_CACHE_TIME
         )
     else:
         await callback_query.answer(
             'Ошибка подключения к сайту! Повторите попытку позже.',
-            cache_time=30
+            cache_time=ERROR_CALLBACK_CACHE_TIME
+        )
+
+
+@app.on_callback_query(filters.regex(const.EXPLANATION_CALLBACK_PATTERN))
+async def explanation_request(client: Client, callback_query: CallbackQuery):
+    rel_link = callback_query.data[1:]
+    response = await http_client.get(const.BASE_URL % rel_link)
+    if response.status_code == 200:
+        quote = Quote(response.text)
+        await callback_query.answer(
+            quote.explanation,
+            show_alert=True,
+            cache_time=CALLBACK_CACHE_TIME
+        )
+    else:
+        await callback_query.answer(
+            'Ошибка подключения к сайту! Повторите попытку позже.',
+            cache_time=ERROR_CALLBACK_CACHE_TIME
         )
 
 
@@ -90,7 +110,7 @@ async def callback_echo(client: Client, callback_query: CallbackQuery):
     await callback_query.answer(
         callback_query.data,
         show_alert=True,
-        cache_time=120
+        cache_time=CALLBACK_CACHE_TIME
     )
 
 
