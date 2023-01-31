@@ -18,19 +18,31 @@ class TaxonomyElem:
         self.emoji = emoji
         self.title = title
         self.category_url = category_url
-        self.content = []
+        self._content = []
 
     def add_content(self, text: str,
                     url: str | None = None):
-        self.content.append({'text': text, 'url': url} if url else text)
+        self._content.append(
+            {'text': text, 'url': url} if url else text
+        )
         return self
+
+    @cached_property
+    def plain_text(self) -> str:
+        text = []
+        for content_item in self._content:
+            if isinstance(content_item, str):
+                text.append(content_item)
+            else:
+                text.append(content_item["text"])
+        return ', '.join(text)
 
     def __str__(self):
         if self.category_url is None:
             text = f'{self.emoji} **{self.title}:** '
         else:
             text = f'{self.emoji} **[{self.title}]({self.category_url}):** '
-        for content_item in self.content:
+        for content_item in self._content:
             if isinstance(content_item, dict):
                 text += f'[{content_item["text"]}]({content_item["url"]}), '
             else:
@@ -68,20 +80,12 @@ class Quote:
         self._quote_tag = self._soup.article
         self._content_tag, self._rating_tag, _ = self._quote_tag.findChildren(recursive=False)
         self._main_body_tag = self._content_tag.findChildren(recursive=False)[0].extract()
-        self.id, self.header                # вызываем кеширование свойств, которые используют
-        del self._soup, self._quote_tag     # избыточные теги, которые после этого удаляем
+        self.id, self.type, self.header  # вызываем кеширование свойств, которые используют
+        del self._soup, self._quote_tag  # избыточные теги, которые после этого удаляем
 
     @cached_property
     def id(self) -> str:
         return self._quote_tag['id'].removeprefix('node-')
-
-    @cached_property
-    def header(self) -> str | None:
-        if self.type is Quote.TYPES.pritcha:
-            header_tag = self._soup.h1
-            if header_tag is None:                           # у случайных цитат хедер находится в теге,
-                header_tag = self._content_tag.extract().h2  # отличном от обычных цитат
-            return header_tag.text
 
     @cached_property
     def type(self) -> Enum:
@@ -92,6 +96,14 @@ class Quote:
         else:
             type = Quote.TYPES.quote
         return type
+
+    @cached_property
+    def header(self) -> str | None:
+        if self.type is Quote.TYPES.pritcha:
+            header_tag = self._soup.h1
+            if header_tag is None:                           # у случайных цитат хедер находится в теге,
+                header_tag = self._content_tag.extract().h2  # отличном от обычных цитат
+            return header_tag.text
 
     @cached_property
     def url(self) -> str:
