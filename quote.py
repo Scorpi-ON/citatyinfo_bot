@@ -60,18 +60,34 @@ class Quote:
     }
 
     def __init__(self, html_page: str):
-        soup = BeautifulSoup(html_page, 'lxml')
-        quote_tag = soup.article
-        self.id = quote_tag['id'].removeprefix('node-')
-        if 'node-po' in quote_tag['class']:
-            self.type = Quote.TYPES.po
-        elif 'node-pritcha' in quote_tag['class']:
-            self.type = Quote.TYPES.pritcha
-            self.header = soup.h1.text
-        else:
-            self.type = Quote.TYPES.quote
-        self._content_tag, self._rating_tag, _ = quote_tag.findChildren(recursive=False)
+        self._soup = BeautifulSoup(html_page, 'lxml')
+        self._quote_tag = self._soup.article
+        self._content_tag, self._rating_tag, _ = self._quote_tag.findChildren(recursive=False)
         self._main_body_tag = self._content_tag.findChildren(recursive=False)[0].extract()
+        self.id, self.header                # вызываем кеширование свойств, которые используют
+        del self._soup, self._quote_tag     # избыточные теги, которые после этого удаляем
+
+    @cached_property
+    def id(self) -> str:
+        return self._quote_tag['id'].removeprefix('node-')
+
+    @cached_property
+    def header(self) -> str | None:
+        if self.type is Quote.TYPES.pritcha:
+            header_tag = self._soup.h1
+            if header_tag is None:                           # у случайных цитат хедер находится в теге,
+                header_tag = self._content_tag.extract().h2  # отличном от обычных цитат
+            return header_tag.text
+
+    @cached_property
+    def type(self) -> Enum:
+        if 'node-po' in self._quote_tag['class']:
+            type = Quote.TYPES.po
+        elif 'node-pritcha' in self._quote_tag['class']:
+            type = Quote.TYPES.pritcha
+        else:
+            type = Quote.TYPES.quote
+        return type
 
     @cached_property
     def url(self) -> str:
