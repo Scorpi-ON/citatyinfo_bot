@@ -12,13 +12,16 @@ from const import *
 
 
 class TaxonomyElem:
-    def __init__(self, emoji: str, title: str, category_url: str | None = None):
+    def __init__(self, emoji: str,
+                 title: str,
+                 category_url: str | None = None):
         self.emoji = emoji
         self.title = title
         self.category_url = category_url
         self.content = []
 
-    def add_content(self, text: str, url: str | None = None):
+    def add_content(self, text: str,
+                    url: str | None = None):
         self.content.append({'text': text, 'url': url} if url else text)
         return self
 
@@ -183,7 +186,9 @@ class Quote:
 
     @property
     def has_original(self) -> bool:
-        return bool(self._content_tag.find('div', class_='quote__original'))
+        return bool(
+            self._content_tag.find('div', class_='quote__original')
+        )
 
     @cached_property
     def explanation(self) -> str | None:
@@ -191,8 +196,8 @@ class Quote:
             'div', class_='field-name-field-description', recursive=False)
         if explanation_tag is not None:
             return utils.normalize(
-                explanation_tag.text.strip().splitlines()[-1]  # отсекаем надпись «Пояснение к цитате»
-            )
+                explanation_tag.text.strip().splitlines()[-1]
+            )  # отсекаем надпись «Пояснение к цитате»
 
     @cached_property
     def __string_representation(self) -> str:
