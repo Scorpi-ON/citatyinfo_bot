@@ -12,20 +12,21 @@ from const import *
 
 
 class TaxonomyElem:
-    def __init__(self, title, category_url=None):
+    def __init__(self, emoji: str, title: str, category_url: str | None = None):
+        self.emoji = emoji
         self.title = title
         self.category_url = category_url
         self.content = []
 
-    def add_content(self, text, url=None):
+    def add_content(self, text: str, url: str | None = None):
         self.content.append({'text': text, 'url': url} if url else text)
         return self
 
     def __str__(self):
         if self.category_url is None:
-            text = f'**{self.title}:** '
+            text = f'{self.emoji} **{self.title}:** '
         else:
-            text = f'**[{self.title}]({self.category_url}):** '
+            text = f'{self.emoji} **[{self.title}]({self.category_url}):** '
         for content_item in self.content:
             if isinstance(content_item, dict):
                 text += f'[{content_item["text"]}]({content_item["url"]}), '
@@ -37,26 +38,26 @@ class TaxonomyElem:
 class Quote:
     TYPES = Enum('Quote types', 'quote po pritcha')
     TAXONOMY_TEMPLATES = {
-        'Автор цитаты': TaxonomyElem('©️ Автор', BASE_CATEGORY_URL % 'man'),
-        'Автор неизвестен': TaxonomyElem('©️ Автор', BASE_CATEGORY_URL % 'man')
+        'Автор цитаты': TaxonomyElem('©️', 'Автор', BASE_CATEGORY_URL % 'man'),
+        'Автор неизвестен': TaxonomyElem('©️', 'Автор', BASE_CATEGORY_URL % 'man')
             .add_content('неизвестен', BASE_URL % 'other'),
-        'Цитируемый персонаж': TaxonomyElem('💬 Цитируемые персонажи'),
-        'Исполнитель': TaxonomyElem('🎤 Исполнители', BASE_CATEGORY_URL % 'music'),
-        'Цитата из книги': TaxonomyElem('📖 Произведение', BASE_CATEGORY_URL % 'book'),
-        'Цитата из фильма': TaxonomyElem('🎬 Фильм', BASE_CATEGORY_URL % 'movie'),
-        'Цитата из мультфильма': TaxonomyElem('🧸 Мультфильм', BASE_CATEGORY_URL % 'cartoon'),
-        'Цитата из сериала': TaxonomyElem('🎥 Сериал', BASE_CATEGORY_URL % 'series'),
-        'Цитата из телешоу': TaxonomyElem('📺 Телешоу', BASE_CATEGORY_URL % 'tv'),
-        'Цитата из спектакля': TaxonomyElem('🎭 Спектакль', BASE_CATEGORY_URL % 'theater'),
-        'Цитата из игры': TaxonomyElem('🎮 Игра', BASE_CATEGORY_URL % 'game'),
-        'Цитата из комикса': TaxonomyElem('🦸🏻\u200d♂️ Комикс', BASE_CATEGORY_URL % 'comics'),
-        'Цитата из аниме': TaxonomyElem('🥷🏻 Аниме', BASE_CATEGORY_URL % 'anime'),
-        'Песня': TaxonomyElem('🎵 Песня', BASE_CATEGORY_URL % 'music'),
-        'Самиздат': TaxonomyElem('✍🏻 Самиздат', BASE_CATEGORY_URL % 'self'),
-        'Притча': TaxonomyElem('☯ Притча', BASE_URL % 'pritchi'),
-        'Фольклор': TaxonomyElem('📜 Фольклор', BASE_URL % 'po'),
-        'Рейтинг': TaxonomyElem('⭐ Рейтинг'),
-        'Эпизод': TaxonomyElem('📀 Эпизод')
+        'Цитируемый персонаж': TaxonomyElem('💬', 'Цитируемые персонажи'),
+        'Исполнитель': TaxonomyElem('🎤', 'Исполнители', BASE_CATEGORY_URL % 'music'),
+        'Цитата из книги': TaxonomyElem('📖', 'Произведение', BASE_CATEGORY_URL % 'book'),
+        'Цитата из фильма': TaxonomyElem('🎬', 'Фильм', BASE_CATEGORY_URL % 'movie'),
+        'Цитата из мультфильма': TaxonomyElem('🧸', 'Мультфильм', BASE_CATEGORY_URL % 'cartoon'),
+        'Цитата из сериала': TaxonomyElem('🎥', 'Сериал', BASE_CATEGORY_URL % 'series'),
+        'Цитата из телешоу': TaxonomyElem('📺', 'Телешоу', BASE_CATEGORY_URL % 'tv'),
+        'Цитата из спектакля': TaxonomyElem('🎭', 'Спектакль', BASE_CATEGORY_URL % 'theater'),
+        'Цитата из игры': TaxonomyElem('🎮', 'Игра', BASE_CATEGORY_URL % 'game'),
+        'Цитата из комикса': TaxonomyElem('🦸🏻\u200d♂️', 'Комикс', BASE_CATEGORY_URL % 'comics'),
+        'Цитата из аниме': TaxonomyElem('🥷🏻', 'Аниме', BASE_CATEGORY_URL % 'anime'),
+        'Песня': TaxonomyElem('🎵', 'Песня', BASE_CATEGORY_URL % 'music'),
+        'Самиздат': TaxonomyElem('✍🏻', 'Самиздат', BASE_CATEGORY_URL % 'self'),
+        'Притча': TaxonomyElem('☯', 'Притча', BASE_URL % 'pritchi'),
+        'Фольклор': TaxonomyElem('📜', 'Фольклор', BASE_URL % 'po'),
+        'Рейтинг': TaxonomyElem('⭐', 'Рейтинг'),
+        'Эпизод': TaxonomyElem('📀', 'Эпизод')
     }
 
     def __init__(self, html_page: str):
