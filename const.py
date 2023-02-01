@@ -17,6 +17,7 @@ QUOTE_PATTERN = re.compile(
 )
 ORIGINAL_CALLBACK_PATTERN = re.compile(r'o(\d+)')
 EXPLANATION_CALLBACK_PATTERN = re.compile(r'e(?:quote|po|pritcha)\/\d+')
+GET_QUOTE_CALLBACK_PATTERN = re.compile(r'g(?:quote|po|pritcha)\/\d+')
 URL_HAS_PAGE_PARAM_PATTERN = re.compile(r'[?&]page=(\d+)$')
 
 # Команды
