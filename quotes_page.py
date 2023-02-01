@@ -57,7 +57,7 @@ class ShortQuote(Quote):
                 elif authors:
                     return authors
                 elif source:
-                    return source
+                    return source.capitalize()
                 else:
                     return 'Неизвестный автор'
 
