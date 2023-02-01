@@ -49,9 +49,9 @@ class ShortQuote(Quote):
                             if authors == 'неизвестен':
                                 authors = 'Неизвестный автор'
                         case 'Песня':
-                            source = f'«{taxonomy_elem.plain_text}»'
+                            source = taxonomy_elem.plain_text
                         case _:
-                            source = f'{taxonomy_elem.title} «{taxonomy_elem.plain_text}»'
+                            source = f'{taxonomy_elem.title.lower()} «{taxonomy_elem.plain_text}»'
                 if authors and source:
                     return f'{authors} — {source}'
                 elif authors:
