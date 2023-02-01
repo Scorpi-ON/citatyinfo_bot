@@ -54,10 +54,8 @@ class ShortQuote(Quote):
                             source = f'{taxonomy_elem.title.lower()} «{taxonomy_elem.plain_text}»'
                 if authors and source:
                     return f'{authors} — {source}'
-                elif authors:
-                    return authors
                 elif source:
-                    return source.capitalize()
+                    return f'{source[0].upper()}{source[1:]}'
                 else:
                     return 'Неизвестный автор'
 
