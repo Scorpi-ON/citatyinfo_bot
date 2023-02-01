@@ -106,15 +106,12 @@ class Quote:
             return header_tag.text
 
     @cached_property
+    def rel_link(self) -> str:
+        return f'{self.type.name}/{self.id}'
+
+    @cached_property
     def url(self) -> str:
-        match self.type:
-            case Quote.TYPES.quote:
-                url = QUOTE_URL
-            case Quote.TYPES.pritcha:
-                url = PRITCHA_URL
-            case Quote.TYPES.po:
-                url = PO_URL
-        return url % self.id
+        return BASE_URL % self.rel_link
 
     @property
     def text(self) -> str | typing.Tuple[str]:
@@ -233,7 +230,7 @@ class Quote:
         first_row = []
         if explanation := self.explanation:
             if explanation.__sizeof__() > 128:
-                explanation = f'e{self.type.name}/{self.id}'
+                explanation = f'e{self.rel_link}'
             first_row.append(InlineKeyboardButton('🔮 Пояснение', explanation))
         if self.has_original:
             first_row.append(InlineKeyboardButton('🇬🇧 Оригинал', f'o{self.id}'))
