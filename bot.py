@@ -40,7 +40,8 @@ async def random(client: Client, message: Message):
     if response.status_code == 200:
         quote = Quote(response.text)
         if quote.images:
-            message, = await message.reply_media_group(quote.images)
+            messages = await message.reply_media_group(quote.images)
+            message = messages[0]
         await message.reply(
             str(quote), quote=bool(quote.images),
             reply_markup=quote.keyboard,
@@ -52,9 +53,9 @@ async def random(client: Client, message: Message):
         )
 
 
-@app.on_message(filters.command('top'))
+@app.on_message(filters.command(list(const.TOP_COMMANDS)))
 async def top(client: Client, message: Message):
-    response = await http_client.get(const.TOP_COMMANDS['top'])
+    response = await http_client.get(const.TOP_COMMANDS[message.command[0]])
     if response.status_code == 200:
         quotes_page = QuotesPage(response.text)
         await message.reply(
@@ -74,7 +75,8 @@ async def quote_by_link(client: Client, message: Message):
     if response.status_code == 200:
         quote = Quote(response.text)
         if quote.images:
-            message, = await message.reply_media_group(quote.images)
+            messages = await message.reply_media_group(quote.images)
+            message = messages[0]
         await message.reply(
             str(quote), quote=bool(quote.images),
             reply_markup=quote.keyboard,
@@ -92,11 +94,11 @@ async def quote_by_callback(client: Client, callback_query: CallbackQuery):
     if response.status_code == 200:
         quote = Quote(response.text)
         if quote.images:
-            message, = await app.send_media_group(
+            messages = await app.send_media_group(
                 callback_query.from_user.id,
                 quote.images
             )
-            await message.reply(
+            await messages[0].reply(
                 str(quote), quote=bool(quote.images),
                 reply_markup=quote.keyboard,
                 disable_web_page_preview=True
