@@ -229,7 +229,7 @@ class Quote:
         return self.__string_representation
 
     @cached_property
-    def keyboard(self) -> InlineKeyboardMarkup | None:
+    def keyboard(self) -> InlineKeyboardMarkup:
         first_row = []
         if explanation := self.explanation:
             if explanation.__sizeof__() > 128:
