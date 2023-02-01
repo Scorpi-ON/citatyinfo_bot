@@ -88,35 +88,6 @@ async def quote_by_link(client: Client, message: Message):
         )
 
 
-@app.on_callback_query(filters.regex(const.GET_QUOTE_CALLBACK_PATTERN))
-async def quote_by_callback(client: Client, callback_query: CallbackQuery):
-    response = await http_client.get(const.BASE_URL % callback_query.data)
-    if response.status_code == 200:
-        quote = Quote(response.text)
-        if quote.images:
-            messages = await app.send_media_group(
-                callback_query.from_user.id,
-                quote.images
-            )
-            await messages[0].reply(
-                str(quote), quote=bool(quote.images),
-                reply_markup=quote.keyboard,
-                disable_web_page_preview=True
-            )
-        else:
-            await app.send_message(
-                callback_query.from_user.id, str(quote),
-                reply_markup=quote.keyboard,
-                disable_web_page_preview=True
-            )
-    else:
-        await app.send_message(
-            callback_query.from_user.id,
-            'Ошибка подключения к сайту! Повторите попытку позже.'
-        )
-    await callback_query.answer(cache_time=CALLBACK_CACHE_TIME)
-
-
 @app.on_callback_query(filters.regex(const.ORIGINAL_CALLBACK_PATTERN))
 async def original_request(client: Client, callback_query: CallbackQuery):
     id, = const.ORIGINAL_CALLBACK_PATTERN.match(callback_query.data).groups()
@@ -151,6 +122,35 @@ async def explanation_request(client: Client, callback_query: CallbackQuery):
             'Ошибка подключения к сайту! Повторите попытку позже.',
             cache_time=ERROR_CALLBACK_CACHE_TIME
         )
+
+
+@app.on_callback_query(filters.regex(const.GET_QUOTE_CALLBACK_PATTERN))
+async def quote_by_callback(client: Client, callback_query: CallbackQuery):
+    response = await http_client.get(const.BASE_URL % callback_query.data)
+    if response.status_code == 200:
+        quote = Quote(response.text)
+        if quote.images:
+            messages = await app.send_media_group(
+                callback_query.from_user.id,
+                quote.images
+            )
+            await messages[0].reply(
+                str(quote), quote=bool(quote.images),
+                reply_markup=quote.keyboard,
+                disable_web_page_preview=True
+            )
+        else:
+            await app.send_message(
+                callback_query.from_user.id, str(quote),
+                reply_markup=quote.keyboard,
+                disable_web_page_preview=True
+            )
+    else:
+        await app.send_message(
+            callback_query.from_user.id,
+            'Ошибка подключения к сайту! Повторите попытку позже.'
+        )
+    await callback_query.answer(cache_time=CALLBACK_CACHE_TIME)
 
 
 @app.on_callback_query()
