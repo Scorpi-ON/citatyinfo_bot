@@ -11,6 +11,7 @@ import aiofiles
 import const
 import utils
 from quote import Quote
+from quotes_page import QuotesPage
 
 
 CONF = dotenv.dotenv_values()
@@ -51,6 +52,22 @@ async def random(client: Client, message: Message):
         )
 
 
+@app.on_message(filters.command('top'))
+async def top(client: Client, message: Message):
+    response = await http_client.get(const.TOP_COMMANDS['top'])
+    if response.status_code == 200:
+        quotes_page = QuotesPage(response.text)
+        await message.reply(
+            str(quotes_page),
+            reply_markup=quotes_page.keyboard,
+            disable_web_page_preview=True
+        )
+    else:
+        await message.reply(
+            'Ошибка подключения к сайту! Повторите попытку позже.'
+        )
+
+
 @app.on_message(filters.regex(const.QUOTE_PATTERN))
 async def quote_by_link(client: Client, message: Message):
     response = await http_client.get(message.text)
@@ -67,6 +84,35 @@ async def quote_by_link(client: Client, message: Message):
         await message.reply(
             'Ошибка подключения к сайту! Повторите попытку позже.'
         )
+
+
+@app.on_callback_query(filters.regex(const.GET_QUOTE_CALLBACK_PATTERN))
+async def quote_by_callback(client: Client, callback_query: CallbackQuery):
+    response = await http_client.get(const.BASE_URL % callback_query.data)
+    if response.status_code == 200:
+        quote = Quote(response.text)
+        if quote.images:
+            message, = await app.send_media_group(
+                callback_query.from_user.id,
+                quote.images
+            )
+            await message.reply(
+                str(quote), quote=bool(quote.images),
+                reply_markup=quote.keyboard,
+                disable_web_page_preview=True
+            )
+        else:
+            await app.send_message(
+                callback_query.from_user.id, str(quote),
+                reply_markup=quote.keyboard,
+                disable_web_page_preview=True
+            )
+    else:
+        await app.send_message(
+            callback_query.from_user.id,
+            'Ошибка подключения к сайту! Повторите попытку позже.'
+        )
+    await callback_query.answer(cache_time=CALLBACK_CACHE_TIME)
 
 
 @app.on_callback_query(filters.regex(const.ORIGINAL_CALLBACK_PATTERN))
