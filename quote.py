@@ -64,7 +64,6 @@ class Quote:
         'Самиздат': TaxonomyElem('✍🏻', 'Самиздат'),
         'Притча': TaxonomyElem('☯', 'Притча'),
         'Фольклор': TaxonomyElem('📜', 'Фольклор'),
-        'Рейтинг': TaxonomyElem('⭐', 'Рейтинг'),
         'Эпизод': TaxonomyElem('📀', 'Эпизод')
     }
 
@@ -115,22 +114,6 @@ class Quote:
                 return text_tag.text.strip()
 
     @property
-    def _rating(self) -> TaxonomyElem | None:
-        rating_tag = self._rating_tag.find(
-            'div', class_='rate-widget-rating__inner')
-        sum, neg, pos = rating_tag.findChildren(recursive=False)
-        sum, neg, pos = sum.text.strip(), neg.text, pos.text
-        if (sum, neg, pos) != ('0', '0', '0'):
-            rating_taxonomy = deepcopy(Quote.TAXONOMY_TEMPLATES['Рейтинг'])
-            if neg == '0':
-                rating_taxonomy.add_content(sum)
-            elif pos == '0':
-                rating_taxonomy.add_content(f'-{sum}')
-            else:
-                rating_taxonomy.add_content(f'{pos} - {neg} = {sum}')
-            return rating_taxonomy
-
-    @property
     def _series(self) -> TaxonomyElem | None:
         if self.type is Quote.TYPES.quote:
             series_tag = self._content_tag.find(
@@ -161,8 +144,6 @@ class Quote:
                 yield taxonomy_elem
             if series := self._series:
                 yield series
-        if rating := self._rating:
-            yield rating
 
     @property
     def topics(self) -> typing.Generator[dict, None, None]:
@@ -201,6 +182,20 @@ class Quote:
                 explanation_tag.text.strip().splitlines()[-1]
             )  # отсекаем надпись «Пояснение к цитате»
 
+    @property
+    def rating(self) -> str | None:
+        rating_tag = self._rating_tag.find(
+            'div', class_='rate-widget-rating__inner')
+        sum, neg, pos = rating_tag.findChildren(recursive=False)
+        sum, neg, pos = sum.text.strip(), neg.text, pos.text
+        if (sum, neg, pos) != ('0', '0', '0'):
+            if neg == '0':
+                return sum
+            elif pos == '0':
+                return f'-{sum}'
+            else:
+                return f'{pos} - {neg} = {sum}'
+
     @cached_property
     def __string_representation(self) -> str:
         if isinstance(text := self.text, tuple):
@@ -221,6 +216,8 @@ class Quote:
     @cached_property
     def keyboard(self) -> InlineKeyboardMarkup:
         first_row = []
+        if rating := self.rating:
+            first_row.append(InlineKeyboardButton('⭐ Рейтинг', rating))
         if explanation := self.explanation:
             if explanation.__sizeof__() > 128:
                 explanation = f'e{self.rel_link}'
