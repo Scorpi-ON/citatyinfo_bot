@@ -23,13 +23,7 @@ app = Client('TestBot')
 http_client = httpx.AsyncClient()
 
 
-@app.on_message(filters.command('start'))
-async def start(client: Client, message: Message):
-    await message.reply('Перед началом использования настоятельно '
-                        'рекомендую прочитать инструкцию (/help). 📄')
-
-
-@app.on_message(filters.command('help'))
+@app.on_message(filters.command(['start', 'help']))
 async def help(client: Client, message: Message):
     await message.reply('Инструкция в процессе написания…')
 
@@ -53,9 +47,11 @@ async def random(client: Client, message: Message):
         )
 
 
-@app.on_message(filters.command(list(const.TOP_COMMANDS)))
-async def top(client: Client, message: Message):
-    response = await http_client.get(const.TOP_COMMANDS[message.command[0]])
+@app.on_message(filters.command(list(const.MULTIPLE_QUOTES_COMMANDS)))
+async def category_commands(client: Client, message: Message):
+    response = await http_client.get(
+        const.MULTIPLE_QUOTES_COMMANDS[message.command[0]]
+    )
     if response.status_code == 200:
         quotes_page = QuotesPage(response.text)
         await message.reply(

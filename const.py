@@ -4,10 +4,10 @@ import re
 BASE_URL = 'https://citaty.info/%s'
 BASE_CATEGORY_URL = BASE_URL % '%s/quotes'
 SEARCH_URL = BASE_URL % 'search/site/%s'
-TOP_RATING_URL = BASE_URL % 'rating/'
+TOP_RATING_URL = BASE_URL % 'rating/%s'
 QUOTE_URL = BASE_URL % 'quote/%s'
 PRITCHA_URL = BASE_URL % 'pritcha/%s'
-PO_URL = BASE_URL % 'po/%s'
+PO_URL = BASE_URL % 'po/%s/quotes'
 AJAX_URL = BASE_URL % 'ajax/en_body/%s'
 RANDOM_URL = BASE_URL % 'random'
 
@@ -21,11 +21,30 @@ GET_QUOTE_CALLBACK_PATTERN = re.compile(r'(?:quote|po|pritcha)\/\d+')
 URL_HAS_PAGE_PARAM_PATTERN = re.compile(r'[?&]page=(\d+)$')
 
 # Команды
-TOP_COMMANDS = {
-    'top': TOP_RATING_URL + 'best',
-    'top_month': TOP_RATING_URL + 'best/month',
-    'top_week': TOP_RATING_URL + 'best/week',
-    'antitop': TOP_RATING_URL + 'worst'
+MULTIPLE_QUOTES_COMMANDS = {
+    'top': TOP_RATING_URL % 'best',
+    'top_month': TOP_RATING_URL % 'best/month',
+    'top_week': TOP_RATING_URL % 'best/week',
+    'short': BASE_URL % 'short',
+    'english': BASE_CATEGORY_URL % 'english',
+    'pictures': BASE_URL % 'pictures',
+    'author': BASE_CATEGORY_URL % 'man',
+    'unknown_author': BASE_URL % 'other',
+    'book': BASE_CATEGORY_URL % 'book',
+    'movie': BASE_CATEGORY_URL % 'movie',
+    'series': BASE_CATEGORY_URL % 'series',
+    'tv': BASE_CATEGORY_URL % 'tv',
+    'cartoon': BASE_CATEGORY_URL % 'cartoon',
+    'anime': BASE_CATEGORY_URL % 'anime',
+    'music': BASE_CATEGORY_URL % 'music',
+    'game': BASE_CATEGORY_URL % 'game',
+    'theater': BASE_CATEGORY_URL % 'theater',
+    'poetry': BASE_CATEGORY_URL % 'poetry',
+    'comics': BASE_CATEGORY_URL % 'comics',
+    'samizdat': BASE_CATEGORY_URL % 'self',
+    'proverb': PO_URL,
+    'parable': PRITCHA_URL,
+    'antitop': TOP_RATING_URL % 'worst'
 }
 
 # Юзер-агенты для базового обхода блокировок сайта
