@@ -2,7 +2,7 @@ import re
 
 # Ссылки
 BASE_URL = 'https://citaty.info/%s'
-BASE_CATEGORY_URL = BASE_URL % '%s/quotes'
+CATEGORY_URL = BASE_URL % '%s/quotes'
 SEARCH_URL = BASE_URL % 'search/site/%s'
 TOP_RATING_URL = BASE_URL % 'rating/%s'
 QUOTE_URL = BASE_URL % 'quote/%s'
@@ -26,22 +26,22 @@ MULTIPLE_QUOTES_COMMANDS = {
     'top_month': TOP_RATING_URL % 'best/month',
     'top_week': TOP_RATING_URL % 'best/week',
     'short': BASE_URL % 'short',
-    'english': BASE_CATEGORY_URL % 'english',
+    'english': CATEGORY_URL % 'english',
     'pictures': BASE_URL % 'pictures',
-    'author': BASE_CATEGORY_URL % 'man',
+    'author': CATEGORY_URL % 'man',
     'unknown_author': BASE_URL % 'other',
-    'book': BASE_CATEGORY_URL % 'book',
-    'movie': BASE_CATEGORY_URL % 'movie',
-    'series': BASE_CATEGORY_URL % 'series',
-    'tv': BASE_CATEGORY_URL % 'tv',
-    'cartoon': BASE_CATEGORY_URL % 'cartoon',
-    'anime': BASE_CATEGORY_URL % 'anime',
-    'music': BASE_CATEGORY_URL % 'music',
-    'game': BASE_CATEGORY_URL % 'game',
-    'theater': BASE_CATEGORY_URL % 'theater',
-    'poetry': BASE_CATEGORY_URL % 'poetry',
-    'comics': BASE_CATEGORY_URL % 'comics',
-    'samizdat': BASE_CATEGORY_URL % 'self',
+    'book': CATEGORY_URL % 'book',
+    'movie': CATEGORY_URL % 'movie',
+    'series': CATEGORY_URL % 'series',
+    'tv': CATEGORY_URL % 'tv',
+    'cartoon': CATEGORY_URL % 'cartoon',
+    'anime': CATEGORY_URL % 'anime',
+    'music': CATEGORY_URL % 'music',
+    'game': CATEGORY_URL % 'game',
+    'theater': CATEGORY_URL % 'theater',
+    'poetry': CATEGORY_URL % 'poetry',
+    'comics': CATEGORY_URL % 'comics',
+    'samizdat': CATEGORY_URL % 'self',
     'proverb': PO_URL,
     'parable': PRITCHA_URL,
     'antitop': TOP_RATING_URL % 'worst'
