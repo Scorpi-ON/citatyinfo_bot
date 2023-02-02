@@ -88,6 +88,22 @@ async def quote_by_link(client: Client, message: Message):
         )
 
 
+@app.on_message()
+async def quote_search(client: Client, message: Message):
+    response = await http_client.get(const.SEARCH_URL % message.text)
+    if response.status_code == 200:
+        quotes_page = QuotesPage(response.text)
+        await message.reply(
+            str(quotes_page),
+            reply_markup=quotes_page.keyboard,
+            disable_web_page_preview=True
+        )
+    else:
+        await message.reply(
+            'Ошибка подключения к сайту! Повторите попытку позже.'
+        )
+
+
 @app.on_callback_query(filters.regex(const.ORIGINAL_CALLBACK_PATTERN))
 async def original_request(client: Client, callback_query: CallbackQuery):
     id, = const.ORIGINAL_CALLBACK_PATTERN.match(callback_query.data).groups()
