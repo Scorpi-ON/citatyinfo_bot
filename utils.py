@@ -19,7 +19,7 @@ def normalize(text: str) -> str:
 
 def compress(long_text: str) -> bytes:
     '''Сжатие строки в байты, которые занимают меньше памяти'''
-    return zlib.compress(long_text.encode('utf-8'))
+    return zlib.compress(long_text.encode('utf-8'), 9)
 
 
 def decompress(binary_text: bytes) -> str:
