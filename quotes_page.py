@@ -42,7 +42,7 @@ class ShortQuote(Quote):
                 authors = source = None
                 for taxonomy_elem in self.taxonomy:
                     match taxonomy_elem.title:
-                        case 'Рейтинг' | 'Эпизод' | 'Цитируемые персонажи':
+                        case 'Эпизод' | 'Цитируемые персонажи':
                             continue
                         case 'Автор' | 'Исполнители':
                             authors = taxonomy_elem.plain_text
@@ -56,6 +56,8 @@ class ShortQuote(Quote):
                     return f'{authors} — {source}'
                 elif source:
                     return f'{source[0].upper()}{source[1:]}'
+                elif authors:
+                    return authors
                 else:
                     return 'Неизвестный автор'
 
@@ -70,7 +72,7 @@ class QuotesPage:
     def __init__(self, html_page: str):
         soup = BeautifulSoup(html_page, 'lxml')
         self.header = soup.h1.text
-        self._page_tag = soup.main
+        self._page_tag = soup.main.div
         self.__quotes_rel_links = []
 
     @property
@@ -79,6 +81,20 @@ class QuotesPage:
             short_quote = ShortQuote(article_tag)
             self.__quotes_rel_links.append(short_quote.rel_link)
             yield short_quote
+
+    @property
+    def pagination(self) -> typing.List[int]:
+        pagination = []
+        pagination_tag = self._page_tag.findChild(
+            'div', class_='pagination', recursive=False)
+        if pagination_tag:
+            for page in pagination_tag.ul.findChildren(recursive=False):
+                if page.a:
+                    if 'pager-previous' in page['class'] or 'pager-next' in page['class']:
+                        pass
+                    else:
+                        pagination.append(int(page.a.text))
+        return pagination
 
     @cached_property
     def __string_representation(self) -> str:
@@ -101,5 +117,8 @@ class QuotesPage:
         for num, rel_link in enumerate(self.__quotes_rel_links, 1):
             quote_rows[0 if num <= number_of_quotes else 1] \
                 .append(InlineKeyboardButton(str(num), rel_link))
-        page_row = []
+        page_row = [
+            InlineKeyboardButton(f'стр. {page}', f'p{page - 1}')
+            for page in self.pagination
+        ]
         return InlineKeyboardMarkup([*quote_rows, page_row])
