@@ -219,7 +219,8 @@ class Quote:
         if rating := self.rating:
             first_row.append(InlineKeyboardButton('⭐ Рейтинг', rating))
         if explanation := self.explanation:
-            if explanation.__sizeof__() > 128:
+            explanation = utils.compress(explanation)
+            if len(explanation) > 128:
                 explanation = f'e{self.rel_link}'
             first_row.append(InlineKeyboardButton('🔮 Пояснение', explanation))
         if self.has_original:
