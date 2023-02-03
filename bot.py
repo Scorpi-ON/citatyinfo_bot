@@ -167,9 +167,14 @@ async def quote_by_callback(client: Client, callback_query: CallbackQuery):
 
 @app.on_callback_query()
 async def callback_echo(client: Client, callback_query: CallbackQuery):
+    if isinstance(callback_query.data, str):
+        text = callback_query.data
+        show_alert = False
+    else:
+        text = utils.decompress(callback_query.data)
+        show_alert = True
     await callback_query.answer(
-        callback_query.data,
-        show_alert=True,
+        text, show_alert,
         cache_time=CALLBACK_CACHE_TIME
     )
 
