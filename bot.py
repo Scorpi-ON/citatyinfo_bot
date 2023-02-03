@@ -21,12 +21,12 @@ http_client = httpx.AsyncClient()
 
 
 @app.on_message(filters.command(['start', 'help']))
-async def help(client: Client, message: Message):
+async def help(_, message: Message):
     await message.reply('Инструкция в процессе написания…')
 
 
 @app.on_message(filters.command('random'))
-async def random(client: Client, message: Message):
+async def random(_, message: Message):
     response = await http_client.get(const.RANDOM_URL)
     if response.status_code == 200:
         quote = Quote(response.text)
@@ -45,7 +45,7 @@ async def random(client: Client, message: Message):
 
 
 @app.on_message(filters.command(list(const.MULTIPLE_QUOTES_COMMANDS)))
-async def category_commands(client: Client, message: Message):
+async def category_commands(_, message: Message):
     response = await http_client.get(
         const.MULTIPLE_QUOTES_COMMANDS[message.command[0]]
     )
@@ -63,7 +63,7 @@ async def category_commands(client: Client, message: Message):
 
 
 @app.on_message(filters.regex(const.QUOTE_PATTERN))
-async def quote_by_link(client: Client, message: Message):
+async def quote_by_link(_, message: Message):
     response = await http_client.get(message.text)
     if response.status_code == 200:
         quote = Quote(response.text)
@@ -82,7 +82,7 @@ async def quote_by_link(client: Client, message: Message):
 
 
 @app.on_message()
-async def quote_search(client: Client, message: Message):
+async def quote_search(_, message: Message):
     response = await http_client.get(const.SEARCH_URL % message.text)
     if response.status_code == 200:
         quotes_page = QuotesPage(response.text)
@@ -98,7 +98,7 @@ async def quote_search(client: Client, message: Message):
 
 
 @app.on_callback_query(filters.regex(const.ORIGINAL_CALLBACK_PATTERN))
-async def original_request(client: Client, callback_query: CallbackQuery):
+async def original_request(_, callback_query: CallbackQuery):
     id, = const.ORIGINAL_CALLBACK_PATTERN.match(callback_query.data).groups()
     response = await http_client.get(const.AJAX_URL % id)
     if response.status_code == 200:
@@ -116,7 +116,7 @@ async def original_request(client: Client, callback_query: CallbackQuery):
 
 
 @app.on_callback_query(filters.regex(const.EXPLANATION_CALLBACK_PATTERN))
-async def explanation_request(client: Client, callback_query: CallbackQuery):
+async def explanation_request(_, callback_query: CallbackQuery):
     rel_link = callback_query.data[1:]
     response = await http_client.get(const.BASE_URL % rel_link)
     if response.status_code == 200:
@@ -134,7 +134,7 @@ async def explanation_request(client: Client, callback_query: CallbackQuery):
 
 
 @app.on_callback_query(filters.regex(const.GET_QUOTE_CALLBACK_PATTERN))
-async def quote_by_callback(client: Client, callback_query: CallbackQuery):
+async def quote_by_callback(_, callback_query: CallbackQuery):
     response = await http_client.get(const.BASE_URL % callback_query.data)
     if response.status_code == 200:
         quote = Quote(response.text)
@@ -163,7 +163,7 @@ async def quote_by_callback(client: Client, callback_query: CallbackQuery):
 
 
 @app.on_callback_query()
-async def callback_echo(client: Client, callback_query: CallbackQuery):
+async def callback_echo(_, callback_query: CallbackQuery):
     if isinstance(callback_query.data, str):
         text = callback_query.data
         show_alert = False
