@@ -1,3 +1,4 @@
+import zlib
 import unicodedata
 from datetime import datetime
 
@@ -14,6 +15,16 @@ def normalize(text: str) -> str:
                .replace('\n ', '\n') \
                .replace('  ', ' ')
     return text
+
+
+def compress(long_text: str) -> bytes:
+    '''Сжатие строки в байты, которые занимают меньше памяти'''
+    zlib.compress(long_text.encode('utf-8'))
+
+
+def decompress(binary_text: bytes) -> str:
+    '''Распаковка сжатых байтов обратно в строку'''
+    zlib.decompress(binary_text).decode('utf-8')
 
 
 def benchmark(func, repeat=1, middle=True):
