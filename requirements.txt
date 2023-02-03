@@ -5,4 +5,3 @@ tgcrypto
 uvloop
 bs4
 lxml
-aiofiles

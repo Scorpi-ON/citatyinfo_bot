@@ -1,12 +1,9 @@
-import os
-
 import dotenv
 import uvloop
 import httpx
 from bs4 import BeautifulSoup
 from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery
-import aiofiles
 
 import const
 import utils
