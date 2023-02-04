@@ -5,6 +5,8 @@ RESULT_CACHE_TIME = 120
 ERROR_CACHE_TIME = 30
 MAX_CALLBACK_DATA_LENGTH = 128
 MAX_CALLBACK_ANSWER_LENGTH = 200
+BAD_REQUEST_MSG = 'Не удалось выполнить запрос, возможно ссылка некорректна!' \
+                  ' Если же она открывается в браузере, попытку позже.'
 
 # Ссылки
 BASE_URL = 'https://citaty.info/%s'
@@ -25,6 +27,8 @@ ORIGINAL_CALLBACK_PATTERN = re.compile(r'o(\d+)')
 EXPLANATION_CALLBACK_PATTERN = re.compile(r'e(?:quote|po|pritcha)\/\d+')
 GET_QUOTE_CALLBACK_PATTERN = re.compile(r'(?:quote|po|pritcha)\/\d+')
 PAGE_PATTERN = re.compile(r'p(\d+)')
+
+COMMON_URL_PATTERN = re.compile(r'^https:\/\/citaty\.info\/.+')
 
 # Команды
 MULTIPLE_QUOTES_COMMANDS = {
