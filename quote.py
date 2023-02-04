@@ -220,7 +220,7 @@ class Quote:
             first_row.append(InlineKeyboardButton('⭐ Рейтинг', rating))
         if explanation := self.explanation:
             explanation = utils.compress(explanation)
-            if len(explanation) > 128:
+            if len(explanation) > MAX_CALLBACK_DATA_LENGTH:
                 explanation = f'e{self.rel_link}'
             first_row.append(InlineKeyboardButton('🔮 Пояснение', explanation))
         if self.has_original:

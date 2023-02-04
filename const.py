@@ -1,5 +1,11 @@
 import re
 
+# Telegram
+RESULT_CACHE_TIME = 120
+ERROR_CACHE_TIME = 30
+MAX_CALLBACK_DATA_LENGTH = 128
+MAX_CALLBACK_ANSWER_LENGTH = 200
+
 # Ссылки
 BASE_URL = 'https://citaty.info/%s'
 CATEGORY_URL = BASE_URL % '%s/quotes'

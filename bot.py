@@ -1,4 +1,3 @@
-import dotenv
 import uvloop
 import httpx
 from bs4 import BeautifulSoup
@@ -10,10 +9,6 @@ import utils
 from quote import Quote
 from quotes_page import QuotesPage
 
-
-CONF = dotenv.dotenv_values()
-CALLBACK_CACHE_TIME = 120
-ERROR_CALLBACK_CACHE_TIME = 30
 
 uvloop.install()
 app = Client('TestBot')
@@ -135,12 +130,12 @@ async def original_request(_, callback_query: CallbackQuery):
         await callback_query.answer(
             utils.normalize(original_text),
             show_alert=True,
-            cache_time=CALLBACK_CACHE_TIME
+            cache_time=const.RESULT_CACHE_TIME
         )
     else:
         await callback_query.answer(
             'Ошибка подключения к сайту! Повторите попытку позже.',
-            cache_time=ERROR_CALLBACK_CACHE_TIME
+            cache_time=const.ERROR_CACHE_TIME
         )
 
 
@@ -151,14 +146,14 @@ async def explanation_request(_, callback_query: CallbackQuery):
     if response.status_code == 200:
         quote = Quote(response.text)
         await callback_query.answer(
-            utils.cut(quote.explanation, 200),
+            utils.cut(quote.explanation, const.MAX_CALLBACK_ANSWER_LENGTH),
             show_alert=True,
-            cache_time=CALLBACK_CACHE_TIME
+            cache_time=const.RESULT_CACHE_TIME
         )
     else:
         await callback_query.answer(
             'Ошибка подключения к сайту! Повторите попытку позже.',
-            cache_time=ERROR_CALLBACK_CACHE_TIME
+            cache_time=const.ERROR_CACHE_TIME
         )
 
 
@@ -188,7 +183,7 @@ async def quote_by_callback(_, callback_query: CallbackQuery):
             callback_query.from_user.id,
             'Ошибка подключения к сайту! Повторите попытку позже.'
         )
-    await callback_query.answer(cache_time=CALLBACK_CACHE_TIME)
+    await callback_query.answer(cache_time=const.RESULT_CACHE_TIME)
 
 
 @app.on_callback_query()
@@ -201,7 +196,7 @@ async def callback_echo(_, callback_query: CallbackQuery):
         show_alert = True
     await callback_query.answer(
         text, show_alert,
-        cache_time=CALLBACK_CACHE_TIME
+        cache_time=const.RESULT_CACHE_TIME
     )
 
 
