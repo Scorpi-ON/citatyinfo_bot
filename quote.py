@@ -179,8 +179,8 @@ class Quote:
             'div', class_='field-name-field-description', recursive=False)
         if explanation_tag is not None:
             return utils.normalize(
-                explanation_tag.text.strip().splitlines()[-1]
-            )  # отсекаем надпись «Пояснение к цитате»
+                explanation_tag.text.strip().splitlines()[-1]  # отсекаем надпись «Пояснение к цитате»
+            )
 
     @property
     def rating(self) -> str | None:
