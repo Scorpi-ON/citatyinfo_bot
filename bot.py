@@ -53,6 +53,7 @@ async def category_commands(_, message: Message):
         quotes_page = QuotesPage(response.text)
         await message.reply(
             str(quotes_page),
+            quote=True,
             reply_markup=quotes_page.keyboard,
             disable_web_page_preview=True
         )
@@ -88,11 +89,34 @@ async def quote_search(_, message: Message):
         quotes_page = QuotesPage(response.text)
         await message.reply(
             str(quotes_page),
+            quote=True,
             reply_markup=quotes_page.keyboard,
             disable_web_page_preview=True
         )
     else:
         await message.reply(
+            'Ошибка подключения к сайту! Повторите попытку позже.'
+        )
+
+
+@app.on_callback_query(filters.regex(const.PAGE_PATTERN))
+async def turn_page(_, callback_query: CallbackQuery):
+    page, = const.PAGE_PATTERN.match(callback_query.data).groups()
+    request_msg = callback_query.message.reply_to_message
+    if request_msg.text[1:] in const.MULTIPLE_QUOTES_COMMANDS:      # почему-то в сообщениях, полученных посредством коллбэка,
+        url = const.MULTIPLE_QUOTES_COMMANDS[request_msg.text[1:]]  # не работает метод command
+    else:
+        url = const.SEARCH_URL % request_msg.text
+    response = await http_client.get(url, params={'page': page} if page != '0' else None)  # нулевую страницу сайт переваривает медленно
+    if response.status_code == 200:
+        quotes_page = QuotesPage(response.text)
+        await callback_query.message.edit(
+            str(quotes_page),
+            reply_markup=quotes_page.keyboard,
+            disable_web_page_preview=True
+        )
+    else:
+        await callback_query.message.reply(
             'Ошибка подключения к сайту! Повторите попытку позже.'
         )
 
@@ -122,7 +146,7 @@ async def explanation_request(_, callback_query: CallbackQuery):
     if response.status_code == 200:
         quote = Quote(response.text)
         await callback_query.answer(
-            quote.explanation,
+            utils.cut(quote.explanation, 200),
             show_alert=True,
             cache_time=CALLBACK_CACHE_TIME
         )
