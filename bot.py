@@ -25,9 +25,13 @@ async def help(_, message: Message):
     )
 
 
-@app.on_message(filters.command('random'))
-async def random(_, message: Message):
-    response = await http_client.get(const.RANDOM_URL)
+@app.on_message(filters.command('random') | filters.regex(const.QUOTE_PATTERN))
+async def single_quote(_, message: Message):
+    if message.command:
+        url = const.RANDOM_URL
+    else:
+        url = message.text
+    response = await http_client.get(url)
     if response.status_code == 200:
         quote = Quote(response.text)
         if quote.images:
@@ -44,47 +48,13 @@ async def random(_, message: Message):
         )
 
 
-@app.on_message(filters.command(list(const.MULTIPLE_QUOTES_COMMANDS)))
-async def category_commands(_, message: Message):
-    response = await http_client.get(
-        const.MULTIPLE_QUOTES_COMMANDS[message.command[0]]
-    )
-    if response.status_code == 200:
-        quotes_page = QuotesPage(response.text)
-        await message.reply(
-            str(quotes_page),
-            quote=True,
-            reply_markup=quotes_page.keyboard,
-            disable_web_page_preview=True
-        )
+@app.on_message(filters.command(list(const.MULTIPLE_QUOTES_COMMANDS)) | filters.text)
+async def multiple_quotes(_, message: Message):
+    if message.command:
+        url = const.MULTIPLE_QUOTES_COMMANDS[message.command[0]]
     else:
-        await message.reply(
-            'Ошибка подключения к сайту! Повторите попытку позже.'
-        )
-
-
-@app.on_message(filters.regex(const.QUOTE_PATTERN))
-async def quote_by_link(_, message: Message):
-    response = await http_client.get(message.text)
-    if response.status_code == 200:
-        quote = Quote(response.text)
-        if quote.images:
-            messages = await message.reply_media_group(quote.images)
-            message = messages[0]
-        await message.reply(
-            str(quote), quote=bool(quote.images),
-            reply_markup=quote.keyboard,
-            disable_web_page_preview=True
-        )
-    else:
-        await message.reply(
-            'Ошибка подключения к сайту! Повторите попытку позже.'
-        )
-
-
-@app.on_message()
-async def quote_search(_, message: Message):
-    response = await http_client.get(const.SEARCH_URL % message.text)
+        url = const.SEARCH_URL % message.text
+    response = await http_client.get(url)
     if response.status_code == 200:
         quotes_page = QuotesPage(response.text)
         await message.reply(
@@ -103,11 +73,13 @@ async def quote_search(_, message: Message):
 async def turn_page(_, callback_query: CallbackQuery):
     page, = const.PAGE_PATTERN.match(callback_query.data).groups()
     request_msg = callback_query.message.reply_to_message
-    if request_msg.text[1:] in const.MULTIPLE_QUOTES_COMMANDS:      # почему-то в сообщениях, полученных посредством коллбэка,
+    if request_msg.text[1:] in const.MULTIPLE_QUOTES_COMMANDS:      # в сообщениях, полученных посредством коллбэка,
         url = const.MULTIPLE_QUOTES_COMMANDS[request_msg.text[1:]]  # не работает метод command
     else:
         url = const.SEARCH_URL % request_msg.text
-    response = await http_client.get(url, params={'page': page} if page != '0' else None)  # нулевую страницу сайт переваривает медленно
+    response = await http_client.get(
+        url, params={'page': page} if page != '0' else None  # нулевую страницу сайт переваривает медленно
+    )
     if response.status_code == 200:
         quotes_page = QuotesPage(response.text)
         await callback_query.message.edit(
