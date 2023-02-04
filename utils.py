@@ -27,6 +27,15 @@ def decompress(binary_text: bytes) -> str:
     return zlib.decompress(binary_text).decode('utf-8')
 
 
+def cut(text: str, char_count: int) -> str:
+    '''
+    Обрезает текст до нужного количества символов с добавлением троеточия в конец
+    '''
+    if len(text) > char_count:
+        text = text[:char_count - 1].rstrip() + '…'
+    return text
+
+
 def benchmark(func, repeat=1, middle=True):
     '''
     Измеряет время выполнения функции repeat раз по среднему или суммарному времени.

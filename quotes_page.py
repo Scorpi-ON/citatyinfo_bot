@@ -62,10 +62,10 @@ class ShortQuote(Quote):
                     return 'Неизвестный автор'
 
     def __str__(self) -> str:
-        text = utils.normalize(f'**[{self.header}]({self.url})**\n{self.text}')
-        if len(text) > 250:
-            text = text[:ShortQuote.MAX_LENGTH] + '…'
-        return text
+        text = utils.normalize(
+            f'**[{self.header}]({self.url})**\n{self.text}'
+        )
+        return utils.cut(text, ShortQuote.MAX_LENGTH)
 
 
 class QuotesPage:
