@@ -29,7 +29,7 @@ MULTIPLE_QUOTES_COMMANDS = {
     'english': CATEGORY_URL % 'english',
     'pictures': BASE_URL % 'pictures',
     'author': CATEGORY_URL % 'man',
-    'unknown_author': BASE_URL % 'other',
+    'unknown': BASE_URL % 'other',
     'book': CATEGORY_URL % 'book',
     'movie': CATEGORY_URL % 'movie',
     'series': CATEGORY_URL % 'series',
