@@ -126,9 +126,10 @@ async def original_request(_, callback_query: CallbackQuery):
     id, = const.ORIGINAL_CALLBACK_PATTERN.match(callback_query.data).groups()
     response = await http_client.get(const.AJAX_URL % id)
     if response.status_code == 200:
-        original_text = BeautifulSoup(response.json()[1]['data'], 'lxml').text
+        soup = BeautifulSoup(response.json()[1]['data'], 'lxml')
+        original_text = utils.normalize(soup.text)
         await callback_query.answer(
-            utils.normalize(original_text),
+            utils.cut(original_text, const.MAX_CALLBACK_ANSWER_LENGTH),
             show_alert=True,
             cache_time=const.RESULT_CACHE_TIME
         )
