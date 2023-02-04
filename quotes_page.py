@@ -87,8 +87,13 @@ class QuotesPage:
         pagination = []
         pagination_tag = self._page_tag.findChild(
             'div', class_='pagination', recursive=False)
+        if not pagination_tag:
+            pagination_tag = self._page_tag.div.findChild(
+                'div', class_='pagination', recursive=False)
         if pagination_tag:
-            for page in pagination_tag.ul.findChildren(recursive=False):
+            for page in pagination_tag \
+                    .find('ul', class_='pager-regular') \
+                    .findChildren(recursive=False):
                 if page.a:
                     if 'pager-previous' in page['class'] or 'pager-next' in page['class']:
                         pass
@@ -121,4 +126,6 @@ class QuotesPage:
             InlineKeyboardButton(f'стр. {page}', f'p{page - 1}')
             for page in self.pagination
         ]
-        return InlineKeyboardMarkup([*quote_rows, page_row])
+        rows = [*quote_rows, page_row]
+        if any(rows):
+            return InlineKeyboardMarkup(rows)
