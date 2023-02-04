@@ -25,6 +25,10 @@ class TaxonomyElem:
         return self
 
     @cached_property
+    def count(self) -> int:
+        return len(self._content)
+
+    @cached_property
     def plain_text(self) -> str:
         text = []
         for content_item in self._content:
