@@ -39,11 +39,16 @@ class ShortQuote(Quote):
                     if taxonomy_elem.title == 'Фольклор':
                         return taxonomy_elem.plain_text
             case Quote.TYPES.quote:
-                authors = source = None
+                authors = source = characters = None
                 for taxonomy_elem in self.taxonomy:
                     match taxonomy_elem.title:
-                        case 'Эпизод' | 'Цитируемые персонажи':
+                        case 'Эпизод':
                             continue
+                        case 'Цитируемые персонажи':
+                            characters = 'Персонаж'
+                            if taxonomy_elem.count > 1:
+                                characters += 'и'
+                            characters += f' {taxonomy_elem.plain_text}'
                         case 'Автор' | 'Исполнители':
                             authors = taxonomy_elem.plain_text
                             if authors == 'неизвестен':
@@ -58,8 +63,10 @@ class ShortQuote(Quote):
                     return f'{source[0].upper()}{source[1:]}'
                 elif authors:
                     return authors
+                elif characters:
+                    return characters
                 else:
-                    return 'Неизвестный автор'
+                    return 'Без названия'
 
     def __str__(self) -> str:
         text = utils.normalize(
@@ -103,6 +110,9 @@ class QuotesPage:
 
     @cached_property
     def __string_representation(self) -> str:
+        no_results = self._page_tag.h2
+        if no_results and no_results.text == 'Ваш поиск не принес результатов':
+            return 'Ничего не найдено по этой ссылке / запросу. 🤷🏻‍♂️'
         text = f'**{self.header}**\n'
         for num, quote in enumerate(self.quotes, 1):
             text += f'\n**{num}.** {quote}\n'
