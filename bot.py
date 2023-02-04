@@ -3,6 +3,7 @@ import httpx
 from bs4 import BeautifulSoup
 from pyrogram import Client, filters
 from pyrogram.types import Message, CallbackQuery
+from pyrogram.enums import ChatAction
 
 import const
 import utils
@@ -27,6 +28,7 @@ async def help(_, message: Message):
 
 @app.on_message(filters.command('random') | filters.regex(const.QUOTE_PATTERN))
 async def single_quote(_, message: Message):
+    await message.reply_chat_action(ChatAction.TYPING)
     if message.command:
         url = const.RANDOM_URL
     else:
@@ -50,6 +52,7 @@ async def single_quote(_, message: Message):
 
 @app.on_message(filters.command(list(const.MULTIPLE_QUOTES_COMMANDS)) | filters.text)
 async def multiple_quotes(_, message: Message):
+    await message.reply_chat_action(ChatAction.TYPING)
     if message.command:
         url = const.MULTIPLE_QUOTES_COMMANDS[message.command[0]]
     else:
@@ -71,6 +74,7 @@ async def multiple_quotes(_, message: Message):
 
 @app.on_callback_query(filters.regex(const.PAGE_PATTERN))
 async def turn_page(_, callback_query: CallbackQuery):
+    await app.send_chat_action(callback_query.from_user.id, ChatAction.TYPING)
     page, = const.PAGE_PATTERN.match(callback_query.data).groups()
     request_msg = callback_query.message.reply_to_message
     if request_msg.text[1:] in const.MULTIPLE_QUOTES_COMMANDS:      # в сообщениях, полученных посредством коллбэка,
@@ -132,6 +136,7 @@ async def explanation_request(_, callback_query: CallbackQuery):
 
 @app.on_callback_query(filters.regex(const.GET_QUOTE_CALLBACK_PATTERN))
 async def quote_by_callback(_, callback_query: CallbackQuery):
+    await app.send_chat_action(callback_query.from_user.id, ChatAction.TYPING)
     response = await http_client.get(const.BASE_URL % callback_query.data)
     if response.status_code == 200:
         quote = Quote(response.text)
