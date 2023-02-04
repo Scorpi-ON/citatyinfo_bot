@@ -45,16 +45,20 @@ async def single_quote(_, message: Message):
             disable_web_page_preview=True
         )
     else:
-        await message.reply(
-            'Ошибка подключения к сайту! Повторите попытку позже.'
-        )
+        await message.reply(const.BAD_REQUEST_MSG)
 
 
-@app.on_message(filters.command(list(const.MULTIPLE_QUOTES_COMMANDS)) | filters.text)
+@app.on_message(
+    filters.command(list(const.MULTIPLE_QUOTES_COMMANDS))
+    | filters.regex(const.COMMON_URL_PATTERN)
+    | filters.text
+)
 async def multiple_quotes(_, message: Message):
     await message.reply_chat_action(ChatAction.TYPING)
     if message.command:
         url = const.MULTIPLE_QUOTES_COMMANDS[message.command[0]]
+    elif const.COMMON_URL_PATTERN.match(message.text):
+        url = message.text
     else:
         url = const.SEARCH_URL % message.text
     response = await http_client.get(url)
@@ -67,18 +71,17 @@ async def multiple_quotes(_, message: Message):
             disable_web_page_preview=True
         )
     else:
-        await message.reply(
-            'Ошибка подключения к сайту! Повторите попытку позже.'
-        )
+        await message.reply(const.BAD_REQUEST_MSG)
 
 
 @app.on_callback_query(filters.regex(const.PAGE_PATTERN))
 async def turn_page(_, callback_query: CallbackQuery):
-    await app.send_chat_action(callback_query.from_user.id, ChatAction.TYPING)
     page, = const.PAGE_PATTERN.match(callback_query.data).groups()
     request_msg = callback_query.message.reply_to_message
     if request_msg.text[1:] in const.MULTIPLE_QUOTES_COMMANDS:      # в сообщениях, полученных посредством коллбэка,
         url = const.MULTIPLE_QUOTES_COMMANDS[request_msg.text[1:]]  # не работает метод command
+    elif const.COMMON_URL_PATTERN.match(request_msg.text):
+        url = request_msg.text
     else:
         url = const.SEARCH_URL % request_msg.text
     response = await http_client.get(
@@ -92,9 +95,7 @@ async def turn_page(_, callback_query: CallbackQuery):
             disable_web_page_preview=True
         )
     else:
-        await callback_query.message.reply(
-            'Ошибка подключения к сайту! Повторите попытку позже.'
-        )
+        await callback_query.message.reply(const.BAD_REQUEST_MSG)
 
 
 @app.on_callback_query(filters.regex(const.ORIGINAL_CALLBACK_PATTERN))
@@ -111,7 +112,7 @@ async def original_request(_, callback_query: CallbackQuery):
         )
     else:
         await callback_query.answer(
-            'Ошибка подключения к сайту! Повторите попытку позже.',
+            const.BAD_REQUEST_MSG,
             cache_time=const.ERROR_CACHE_TIME
         )
 
@@ -129,14 +130,13 @@ async def explanation_request(_, callback_query: CallbackQuery):
         )
     else:
         await callback_query.answer(
-            'Ошибка подключения к сайту! Повторите попытку позже.',
+            const.BAD_REQUEST_MSG,
             cache_time=const.ERROR_CACHE_TIME
         )
 
 
 @app.on_callback_query(filters.regex(const.GET_QUOTE_CALLBACK_PATTERN))
 async def quote_by_callback(_, callback_query: CallbackQuery):
-    await app.send_chat_action(callback_query.from_user.id, ChatAction.TYPING)
     response = await http_client.get(const.BASE_URL % callback_query.data)
     if response.status_code == 200:
         quote = Quote(response.text)
@@ -159,7 +159,7 @@ async def quote_by_callback(_, callback_query: CallbackQuery):
     else:
         await app.send_message(
             callback_query.from_user.id,
-            'Ошибка подключения к сайту! Повторите попытку позже.'
+            const.BAD_REQUEST_MSG
         )
     await callback_query.answer(cache_time=const.RESULT_CACHE_TIME)
 
