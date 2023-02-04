@@ -90,6 +90,19 @@ class QuotesPage:
             yield short_quote
 
     @property
+    def other_links(self) -> typing.Dict[str, dict] | None:
+        other_links_tag = self._page_tag.find('div', class_='search__results')
+        if other_links_tag:
+            groups = {}
+            for group in other_links_tag.findChildren(recursive=False):
+                content = [
+                    {'text': link.text, 'url': link['href']}
+                    for link in group.find_all('a')
+                ]
+                groups[group.div.text] = content
+            return groups
+
+    @property
     def pagination(self) -> typing.List[int]:
         pagination = []
         pagination_tag = self._page_tag.findChild(
@@ -116,6 +129,12 @@ class QuotesPage:
         text = f'**{self.header}**\n'
         for num, quote in enumerate(self.quotes, 1):
             text += f'\n**{num}.** {quote}\n'
+        if other_links := self.other_links:
+            for group in other_links:
+                text += f'\n**{group}**'
+                for link in other_links[group]:
+                    text += f'\n[{link["text"]}]({link["url"]})'
+                text += '\n'
         return utils.normalize(text)
 
     def __str__(self):
