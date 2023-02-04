@@ -69,9 +69,7 @@ class ShortQuote(Quote):
                     return 'Без названия'
 
     def __str__(self) -> str:
-        text = utils.normalize(
-            f'**[{self.header}]({self.url})**\n{self.text}'
-        )
+        text = utils.normalize(f'**{self.header}**\n{self.text}')
         return utils.cut(text, ShortQuote.MAX_LENGTH)
 
 
