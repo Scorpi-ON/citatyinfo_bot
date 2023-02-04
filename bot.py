@@ -22,7 +22,12 @@ http_client = httpx.AsyncClient()
 
 @app.on_message(filters.command(['start', 'help']))
 async def help(_, message: Message):
-    await message.reply('Инструкция в процессе написания…')
+    await message.reply(
+        'Справка с полным описанием функционала бота пока не написана.'
+        ' Но вы можете начать его использование с команд.'
+        ' Также можно искать цитаты по гиперссылкам из сообщений'
+        ' и по собственным текстовым запросам.'
+    )
 
 
 @app.on_message(filters.command('random'))
