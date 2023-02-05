@@ -16,11 +16,10 @@ def optimize(text: str) -> str:
     '''
     Сокращает текст путём замены некоторых символов.
     '''
-    text = text.strip() \
-               .replace('  ', ' ') \
-               .replace('\n ', '\n') \
-               .replace('\n\n\n', '\n\n') \
-               .replace('...', '…')
+    text = text.strip().replace('...', '…').replace(' – ', ' — ')
+    for pair in (('  ', ' '), ('\n ', '\n'), ('\n\n\n', '\n\n')):  # для этих последовательностей
+        while pair[0] in text:                                     # cимволов нужна циклическая замена
+            text = text.replace(*pair)
     return text
 
 
