@@ -85,24 +85,28 @@ class QuotesPage:
         self.__quotes_rel_links = []
 
     @property
-    def quotes(self) -> typing.Generator[ShortQuote, None, None]:
-        for article_tag in self._page_tag.find_all('article'):
-            short_quote = ShortQuote(article_tag)
-            self.__quotes_rel_links.append(short_quote.rel_link)
-            yield short_quote
+    def quotes(self) -> typing.List[ShortQuote]:
+        quotes = []
+        no_results = self._page_tag.h2
+        if not no_results or no_results.text != 'Ваш поиск не принёс результатов':
+            for article_tag in self._page_tag.find_all('article'):
+                short_quote = ShortQuote(article_tag)
+                self.__quotes_rel_links.append(short_quote.rel_link)
+                quotes.append(short_quote)
+        return quotes
 
     @property
-    def other_links(self) -> typing.Dict[str, dict] | None:
+    def other_links(self) -> typing.Dict[str, dict]:
+        groups = {}
         other_links_tag = self._page_tag.find('div', class_='search__results')
         if other_links_tag:
-            groups = {}
             for group in other_links_tag.findChildren(recursive=False):
                 content = [
                     {'text': link.text, 'url': link['href']}
                     for link in group.find_all('a')
                 ]
                 groups[group.div.text] = content
-            return groups
+        return groups
 
     @property
     def pagination(self) -> typing.List[int]:
@@ -125,21 +129,18 @@ class QuotesPage:
 
     @cached_property
     def __string_representation(self) -> str:
+        quotes = self.quotes
         other_links = self.other_links
-        no_results = self._page_tag.h2
-        if no_results \
-                and no_results == 'Ваш поиск не принёс результатов' \
-                and not other_links:
+        if not quotes and not other_links:
             return 'Ничего не найдено по этой ссылке / запросу. 🤷🏻‍♂️'
         text = f'**{self.header}**\n'
-        for num, quote in enumerate(self.quotes, 1):
+        for num, quote in enumerate(quotes, 1):
             text += f'\n**{num}.** {quote}\n'
-        if other_links:
-            for group in other_links:
-                text += f'\n**{group}**'
-                for link in other_links[group]:
-                    text += f'\n[{link["text"]}]({link["url"]})'
-                text += '\n'
+        for group in other_links:
+            text += f'\n**{group}**'
+            for link in other_links[group]:
+                text += f'\n[{link["text"]}]({link["url"]})'
+            text += '\n'
         return utils.optimize(text)
 
     def __str__(self):
