@@ -35,7 +35,7 @@ def decompress(binary_text: bytes) -> str:
 
 def cut(text: str, char_count: int) -> str:
     '''
-    Обрезает текст до нужного количества символов с добавлением троеточия в конец
+    Обрезает текст до нужного количества символов с добавлением троеточия в конец.
     '''
     if len(text) > char_count:
         text = text[:char_count - 1].rstrip() + '…'
