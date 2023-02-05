@@ -1,5 +1,4 @@
 import zlib
-import unicodedata
 from datetime import datetime
 
 from pyrogram import filters
@@ -13,17 +12,15 @@ async def str_callback_filter(_, __, callback_query: CallbackQuery) -> bool:
 str_callback_filter = filters.create(str_callback_filter)
 
 
-def normalize(text: str) -> str:
+def optimize(text: str) -> str:
     '''
-    Исправляет неправильные unicode-символы в тексте, полученном из HTML,
-    и слегка сокращает его.
+    Сокращает текст путём замены некоторых символов.
     '''
-    text = unicodedata.normalize('NFKC', text)
     text = text.strip() \
-               .replace('...', '…') \
-               .replace('\n\n\n', '\n\n') \
+               .replace('  ', ' ') \
                .replace('\n ', '\n') \
-               .replace('  ', ' ')
+               .replace('\n\n\n', '\n\n') \
+               .replace('...', '…')
     return text
 
 

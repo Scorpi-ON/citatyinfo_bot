@@ -69,7 +69,7 @@ class ShortQuote(Quote):
                     return 'Без названия'
 
     def __str__(self) -> str:
-        text = utils.normalize(f'**{self.header}**\n{self.text}')
+        text = utils.optimize(f'**{self.header}**\n{self.text}')
         return utils.cut(text, ShortQuote.MAX_LENGTH)
 
 
@@ -134,7 +134,7 @@ class QuotesPage:
                 for link in other_links[group]:
                     text += f'\n[{link["text"]}]({link["url"]})'
                 text += '\n'
-        return utils.normalize(text)
+        return utils.optimize(text)
 
     def __str__(self):
         return self.__string_representation

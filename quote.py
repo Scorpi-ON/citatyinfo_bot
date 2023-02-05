@@ -185,7 +185,7 @@ class Quote:
         explanation_tag = self._content_tag.find(
             'div', class_='field-name-field-description', recursive=False)
         if explanation_tag is not None:
-            return utils.normalize(
+            return utils.optimize(
                 explanation_tag.text.strip().splitlines()[-1]  # отсекаем надпись «Пояснение к цитате»
             )
 
@@ -216,7 +216,7 @@ class Quote:
         text += '\n'
         for topic in self.topics:
             text += f'[#{topic["text"]}]({topic["url"]}) '
-        return utils.normalize(text)
+        return utils.optimize(text)
 
     def __str__(self):
         return self.__string_representation
