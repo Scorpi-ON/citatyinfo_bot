@@ -19,11 +19,11 @@ RANDOM_URL = BASE_URL % 'random'
 
 # Регулярки
 QUOTE_PATTERN = re.compile(
-    r'^https://citaty.info/(?:quote|pritcha|po|proverb)/(\d+)(?:#comment(?:-form|s))?$'
+    r'^https://citaty.info/(?:quote|po|proverb|pritcha|parable)/(\d+)(?:#comment(?:-form|s))?$'
 )
 ORIGINAL_CALLBACK_PATTERN = re.compile(r'o(\d+)')
-EXPLANATION_CALLBACK_PATTERN = re.compile(r'e(?:quote|po|pritcha)\/\d+')
-GET_QUOTE_CALLBACK_PATTERN = re.compile(r'(?:quote|po|pritcha)\/\d+')
+EXPLANATION_CALLBACK_PATTERN = re.compile(r'e(?:quote|po|pritcha|parable)\/\d+')
+GET_QUOTE_CALLBACK_PATTERN = re.compile(r'(?:quote|po|pritcha|parable)\/\d+')
 PAGE_PATTERN = re.compile(r'p(\d+)')
 
 COMMON_URL_PATTERN = re.compile(r'^https:\/\/citaty\.info\/.+')
