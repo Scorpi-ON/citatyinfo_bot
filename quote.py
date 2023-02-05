@@ -140,12 +140,13 @@ class Quote:
                 'div', class_='field-type-taxonomy-term-reference',
                 recursive=False)
             for tag in taxonomy_tags:
-                key = tag.a.get('title', 'Фольклор')  # ссылки на пословицы не имеют атрибута title
-                taxonomy_elem = deepcopy(Quote.TAXONOMY_TEMPLATES[key])
-                if key != 'Автор неизвестен':
-                    for link_tag in tag.find_all('a'):
-                        taxonomy_elem.add_content(link_tag.text, link_tag['href'])
-                yield taxonomy_elem
+                if tag.a:  # бывает, что находятся пустые div'ы без ссылок
+                    key = tag.a.get('title', 'Фольклор')  # ссылки на пословицы не имеют атрибута title
+                    taxonomy_elem = deepcopy(Quote.TAXONOMY_TEMPLATES[key])
+                    if key != 'Автор неизвестен':
+                        for link_tag in tag.find_all('a'):
+                            taxonomy_elem.add_content(link_tag.text, link_tag['href'])
+                    yield taxonomy_elem
             if series := self._series:
                 yield series
 
@@ -202,7 +203,8 @@ class Quote:
 
     @cached_property
     def __string_representation(self) -> str:
-        if isinstance(text := self.text, tuple):
+        text = self.text
+        if isinstance(text, tuple):
             text = f'**Оригинал:**\n{text[0]}\n\n**Перевод:**\n{text[1]}'
         if self.type is Quote.TYPES.pritcha:
             text = f'**{self.header}**\n{text}'
