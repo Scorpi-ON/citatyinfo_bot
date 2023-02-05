@@ -158,7 +158,9 @@ class Quote:
             topics.extend(topics_tag.find_all('a'))       # основные темы, приведённые под цитатой
         topics.extend(self._main_body_tag.find_all('a'))  # темы, встроенные в текст цитаты
         for num, topic in enumerate(topics):
-            topic = {'text': topic.text.lower().replace(', ', ' #'),
+            topic = {'text': topic.text.lower()
+                                       .replace(' ', '_')
+                                       .replace(',_', ' #'),
                      'url': topic['href']}  # преобразуем теги в удобные для использования словари
             if topic['url'] not in topics:  # и отсеиваем, если такие ссылки (не текст,
                 yield topic
