@@ -16,16 +16,6 @@ app = Client('TestBot')
 http_client = httpx.AsyncClient()
 
 
-@app.on_message(filters.command(['start', 'help']))
-async def help(_, message: Message):
-    await message.reply(
-        'Справка с полным описанием функционала бота пока не написана.'
-        ' Но вы можете начать его использование с команд.'
-        ' Также можно искать цитаты по гиперссылкам из сообщений'
-        ' и по собственным текстовым запросам.'
-    )
-
-
 async def request(
         url: str,
         message: Message | None = None,
@@ -49,6 +39,16 @@ async def request(
                 const.BAD_REQUEST_MSG,
                 cache_time=const.ERROR_CACHE_TIME
             )
+
+
+@app.on_message(filters.command(['start', 'help']))
+async def help(_, message: Message):
+    await message.reply(
+        'Справка с полным описанием функционала бота пока не написана.'
+        ' Но вы можете начать его использование с команд.'
+        ' Также можно искать цитаты по гиперссылкам из сообщений'
+        ' и по собственным текстовым запросам.'
+    )
 
 
 @app.on_message(
