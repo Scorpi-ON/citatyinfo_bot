@@ -2,6 +2,16 @@ import zlib
 import unicodedata
 from datetime import datetime
 
+from pyrogram import filters
+from pyrogram.types import CallbackQuery
+
+
+async def str_callback_filter(_, __, callback_query: CallbackQuery) -> bool:
+    return isinstance(callback_query.data, str)
+
+
+str_callback_filter = filters.create(str_callback_filter)
+
 
 def normalize(text: str) -> str:
     '''

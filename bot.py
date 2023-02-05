@@ -26,7 +26,10 @@ async def help(_, message: Message):
     )
 
 
-@app.on_message(filters.command('random') | filters.regex(const.QUOTE_PATTERN))
+@app.on_message(
+    filters.command('random')
+    | filters.regex(const.QUOTE_PATTERN)
+)
 async def single_quote(_, message: Message):
     await message.reply_chat_action(ChatAction.TYPING)
     if message.command:
@@ -50,7 +53,6 @@ async def single_quote(_, message: Message):
 
 @app.on_message(
     filters.command(list(const.MULTIPLE_QUOTES_COMMANDS))
-    | filters.regex(const.COMMON_URL_PATTERN)
     | filters.text
 )
 async def multiple_quotes(_, message: Message):
@@ -74,7 +76,10 @@ async def multiple_quotes(_, message: Message):
         await message.reply(const.BAD_REQUEST_MSG)
 
 
-@app.on_callback_query(filters.regex(const.PAGE_PATTERN))
+@app.on_callback_query(
+    utils.str_callback_filter
+    & filters.regex(const.PAGE_PATTERN)
+)
 async def turn_page(_, callback_query: CallbackQuery):
     page, = const.PAGE_PATTERN.match(callback_query.data).groups()
     request_msg = callback_query.message.reply_to_message
@@ -98,7 +103,10 @@ async def turn_page(_, callback_query: CallbackQuery):
         await callback_query.message.reply(const.BAD_REQUEST_MSG)
 
 
-@app.on_callback_query(filters.regex(const.ORIGINAL_CALLBACK_PATTERN))
+@app.on_callback_query(
+    utils.str_callback_filter
+    & filters.regex(const.ORIGINAL_CALLBACK_PATTERN)
+)
 async def original_request(_, callback_query: CallbackQuery):
     id, = const.ORIGINAL_CALLBACK_PATTERN.match(callback_query.data).groups()
     response = await http_client.get(const.AJAX_URL % id)
@@ -117,7 +125,10 @@ async def original_request(_, callback_query: CallbackQuery):
         )
 
 
-@app.on_callback_query(filters.regex(const.EXPLANATION_CALLBACK_PATTERN))
+@app.on_callback_query(
+    utils.str_callback_filter
+    & filters.regex(const.EXPLANATION_CALLBACK_PATTERN)
+)
 async def explanation_request(_, callback_query: CallbackQuery):
     rel_link = callback_query.data[1:]
     response = await http_client.get(const.BASE_URL % rel_link)
@@ -135,7 +146,10 @@ async def explanation_request(_, callback_query: CallbackQuery):
         )
 
 
-@app.on_callback_query(filters.regex(const.GET_QUOTE_CALLBACK_PATTERN))
+@app.on_callback_query(
+    utils.str_callback_filter
+    & filters.regex(const.GET_QUOTE_CALLBACK_PATTERN)
+)
 async def quote_by_callback(_, callback_query: CallbackQuery):
     response = await http_client.get(const.BASE_URL % callback_query.data)
     if response.status_code == 200:
