@@ -68,7 +68,8 @@ class Quote:
         'Самиздат': TaxonomyElem('✍🏻', 'Самиздат'),
         'Притча': TaxonomyElem('☯', 'Притча'),
         'Фольклор': TaxonomyElem('📜', 'Фольклор'),
-        'Эпизод': TaxonomyElem('📀', 'Эпизод')
+        'Эпизод': TaxonomyElem('📀', 'Эпизод'),
+        'КВН': TaxonomyElem('😂', 'Команда КВН')
     }
 
     def __init__(self, html_page: str):
@@ -141,7 +142,12 @@ class Quote:
                 recursive=False)
             for tag in taxonomy_tags:
                 if tag.a:  # бывает, что находятся пустые div'ы без ссылок
-                    key = tag.a.get('title', 'Фольклор')  # ссылки на пословицы не имеют атрибута title
+                    key = tag.a.get('title')
+                    if not key:
+                        if '/kvn/' in tag.a['href']:
+                            key = 'КВН'
+                        else:
+                            key = 'Фольклор'
                     taxonomy_elem = deepcopy(Quote.TAXONOMY_TEMPLATES[key])
                     if key != 'Автор неизвестен':
                         for link_tag in tag.find_all('a'):

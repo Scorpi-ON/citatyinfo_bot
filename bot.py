@@ -83,15 +83,13 @@ async def multiple_quotes(_, message: Message):
 async def turn_page(_, callback_query: CallbackQuery):
     page, = const.PAGE_PATTERN.match(callback_query.data).groups()
     request_msg = callback_query.message.reply_to_message
-    if request_msg.text[1:] in const.MULTIPLE_QUOTES_COMMANDS:      # в сообщениях, полученных посредством коллбэка,
-        url = const.MULTIPLE_QUOTES_COMMANDS[request_msg.text[1:]]  # не работает метод command
+    if request_msg.text[1:] in const.MULTIPLE_QUOTES_COMMANDS:      # в сообщениях, полученных не по фильтру
+        url = const.MULTIPLE_QUOTES_COMMANDS[request_msg.text[1:]]  # команд, не работает метод command
     elif const.COMMON_URL_PATTERN.match(request_msg.text):
         url = request_msg.text
     else:
         url = const.SEARCH_URL % request_msg.text
-    response = await http_client.get(
-        url, params={'page': page}
-    )
+    response = await http_client.get(url, params={'page': page})
     if response.status_code == 200:
         quotes_page = QuotesPage(response.text)
         await callback_query.message.edit(
