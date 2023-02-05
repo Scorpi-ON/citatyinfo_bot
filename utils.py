@@ -5,11 +5,11 @@ from pyrogram import filters
 from pyrogram.types import CallbackQuery
 
 
-async def str_callback_filter(_, __, callback_query: CallbackQuery) -> bool:
+async def str_query_filter(_, __, callback_query: CallbackQuery) -> bool:
     return isinstance(callback_query.data, str)
 
 
-str_callback_filter = filters.create(str_callback_filter)
+str_query_filter = filters.create(str_query_filter)
 
 
 def optimize(text: str) -> str:
