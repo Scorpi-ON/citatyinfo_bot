@@ -12,7 +12,7 @@ from quotes_page import QuotesPage
 
 
 uvloop.install()
-app = Client('TestBot')
+app = Client('Bot')
 http_client = httpx.AsyncClient()
 
 
@@ -100,6 +100,13 @@ async def multiple_quotes(_, msg: Message):
 async def turn_page(_, query: CallbackQuery):
     page, = const.PAGE_PATTERN.match(query.data).groups()
     request_msg = query.message.reply_to_message
+    if not request_msg.text:
+        await query.message.edit(
+            'Невозможно переключить страницу: сообщение с запросом, по'
+            ' которому она должна формироваться, удалено. Отправьте этот'
+            ' запрос снова и повторите попытку.'
+        )
+        return
     if request_msg.text[1:] in const.MULTIPLE_QUOTES_COMMANDS:      # в сообщениях, полученных не по фильтру
         url = const.MULTIPLE_QUOTES_COMMANDS[request_msg.text[1:]]  # команд, не работает метод command
     elif const.COMMON_URL_PATTERN.match(request_msg.text):
