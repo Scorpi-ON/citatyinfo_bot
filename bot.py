@@ -90,7 +90,7 @@ async def turn_page(_, callback_query: CallbackQuery):
     else:
         url = const.SEARCH_URL % request_msg.text
     response = await http_client.get(
-        url, params={'page': page} if page != '0' else None  # нулевую страницу сайт переваривает медленно
+        url, params={'page': page}
     )
     if response.status_code == 200:
         quotes_page = QuotesPage(response.text)
