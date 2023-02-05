@@ -27,13 +27,17 @@ class ShortQuote(Quote):
 
     @property
     def text(self) -> str:
-        return self._content_tag.div.text.strip()
+        if self.type is Quote.TYPES.pritcha:
+            text_tag = self._content_tag.find_all('div', recursive=False)[1]
+        else:
+            text_tag = self._content_tag.div
+        return text_tag.text.strip()
 
     @property
     def header(self) -> str:
         match self.type:
             case Quote.TYPES.pritcha:
-                return f'Притча «{self.header}»'
+                return f'Притча «{self._content_tag.h2.text}»'
             case Quote.TYPES.po:
                 for taxonomy_elem in self.taxonomy:
                     if taxonomy_elem.title == 'Фольклор':
@@ -123,7 +127,9 @@ class QuotesPage:
     def __string_representation(self) -> str:
         other_links = self.other_links
         no_results = self._page_tag.h2
-        if no_results and not other_links:
+        if no_results \
+                and no_results == 'Ваш поиск не принёс результатов' \
+                and not other_links:
             return 'Ничего не найдено по этой ссылке / запросу. 🤷🏻‍♂️'
         text = f'**{self.header}**\n'
         for num, quote in enumerate(self.quotes, 1):

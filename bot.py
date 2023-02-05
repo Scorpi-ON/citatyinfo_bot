@@ -36,7 +36,7 @@ async def single_quote(_, message: Message):
         url = const.RANDOM_URL
     else:
         url = message.text
-    response = await http_client.get(url)
+    response = await http_client.get(url, follow_redirects=True)
     if response.status_code == 200:
         quote = Quote(response.text)
         if quote.images:
@@ -129,7 +129,10 @@ async def original_request(_, callback_query: CallbackQuery):
 )
 async def explanation_request(_, callback_query: CallbackQuery):
     rel_link = callback_query.data[1:]
-    response = await http_client.get(const.BASE_URL % rel_link)
+    response = await http_client.get(
+        const.BASE_URL % rel_link,
+        follow_redirects=True
+    )
     if response.status_code == 200:
         quote = Quote(response.text)
         await callback_query.answer(
@@ -149,7 +152,10 @@ async def explanation_request(_, callback_query: CallbackQuery):
     & filters.regex(const.GET_QUOTE_CALLBACK_PATTERN)
 )
 async def quote_by_callback(_, callback_query: CallbackQuery):
-    response = await http_client.get(const.BASE_URL % callback_query.data)
+    response = await http_client.get(
+        const.BASE_URL % callback_query.data,
+        follow_redirects=True
+    )
     if response.status_code == 200:
         quote = Quote(response.text)
         if quote.images:

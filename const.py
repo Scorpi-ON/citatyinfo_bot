@@ -14,8 +14,6 @@ CATEGORY_URL = BASE_URL % '%s/quotes'
 SEARCH_URL = BASE_URL % 'search/site/%s'
 TOP_RATING_URL = BASE_URL % 'rating/%s'
 QUOTE_URL = BASE_URL % 'quote/%s'
-PRITCHA_URL = BASE_URL % 'pritcha/%s'
-PO_URL = BASE_URL % 'po/%s/quotes'
 AJAX_URL = BASE_URL % 'ajax/en_body/%s'
 RANDOM_URL = BASE_URL % 'random'
 
@@ -52,8 +50,8 @@ MULTIPLE_QUOTES_COMMANDS = {
     'poetry': CATEGORY_URL % 'poetry',
     'comics': CATEGORY_URL % 'comics',
     'samizdat': CATEGORY_URL % 'self',
-    'proverb': PO_URL,
-    'parable': PRITCHA_URL,
+    'proverb': BASE_URL % 'po/quotes',
+    'parable': BASE_URL % 'pritchi',
     'antitop': TOP_RATING_URL % 'worst'
 }
 

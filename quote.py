@@ -106,10 +106,6 @@ class Quote:
     def rel_link(self) -> str:
         return f'{self.type.name}/{self.id}'
 
-    @cached_property
-    def url(self) -> str:
-        return BASE_URL % self.rel_link
-
     @property
     def text(self) -> str | typing.Tuple[str]:
         match self._main_body_tag.findChildren(recursive=False):
@@ -146,6 +142,8 @@ class Quote:
                     if not key:
                         if '/kvn/' in tag.a['href']:
                             key = 'КВН'
+                        elif tag.a['href'] == '/other':
+                            key = 'Автор неизвестен'
                         else:
                             key = 'Фольклор'
                     taxonomy_elem = deepcopy(Quote.TAXONOMY_TEMPLATES[key])
@@ -214,8 +212,6 @@ class Quote:
         text = self.text
         if isinstance(text, tuple):
             text = f'**Оригинал:**\n{text[0]}\n\n**Перевод:**\n{text[1]}'
-        if self.type is Quote.TYPES.pritcha:
-            text = f'**{self.header}**\n{text}'
         text += '\n\n'
         for taxonomy_elem in self.taxonomy:
             text += f'{taxonomy_elem}\n'
@@ -241,5 +237,5 @@ class Quote:
             first_row.append(InlineKeyboardButton('🇬🇧 Оригинал', f'o{self.id}'))
         return InlineKeyboardMarkup([
             first_row,
-            [InlineKeyboardButton('🔗 Открыть', url=self.url)]
+            [InlineKeyboardButton('🔗 Открыть', url=BASE_URL % self.rel_link)]
         ])
