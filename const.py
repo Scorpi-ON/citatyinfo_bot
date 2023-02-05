@@ -3,7 +3,7 @@ import re
 # Telegram
 RESULT_CACHE_TIME = 120
 ERROR_CACHE_TIME = 30
-MAX_CALLBACK_DATA_LENGTH = 128
+MAX_CALLBACK_DATA_LENGTH = 64
 MAX_CALLBACK_ANSWER_LENGTH = 200
 BAD_REQUEST_MSG = 'Не удалось выполнить запрос, возможно ссылка некорректна!' \
                   ' Если же она открывается в браузере, попытку позже.'
