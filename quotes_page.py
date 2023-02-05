@@ -121,13 +121,14 @@ class QuotesPage:
 
     @cached_property
     def __string_representation(self) -> str:
+        other_links = self.other_links
         no_results = self._page_tag.h2
-        if no_results and no_results.text == 'Ваш поиск не принес результатов':
+        if no_results and not other_links:
             return 'Ничего не найдено по этой ссылке / запросу. 🤷🏻‍♂️'
         text = f'**{self.header}**\n'
         for num, quote in enumerate(self.quotes, 1):
             text += f'\n**{num}.** {quote}\n'
-        if other_links := self.other_links:
+        if other_links:
             for group in other_links:
                 text += f'\n**{group}**'
                 for link in other_links[group]:
