@@ -26,18 +26,41 @@ async def help(_, message: Message):
     )
 
 
+async def request(
+        url: str,
+        message: Message | None = None,
+        callback_query: CallbackQuery | None = None,
+        page: str | None = None
+) -> httpx.Response | None:
+    assert bool(message) != bool(callback_query)
+    if message:
+        await message.reply_chat_action(ChatAction.TYPING)
+    response = await http_client.get(
+        url, follow_redirects=True,
+        params={'page': page} if page else None
+    )
+    if response.status_code == 200:
+        return response
+    else:
+        if message:
+            await message.reply(const.BAD_REQUEST_MSG)
+        else:
+            await callback_query.answer(
+                const.BAD_REQUEST_MSG,
+                cache_time=const.ERROR_CACHE_TIME
+            )
+
+
 @app.on_message(
     filters.command('random')
     | filters.regex(const.QUOTE_PATTERN)
 )
 async def single_quote(_, message: Message):
-    await message.reply_chat_action(ChatAction.TYPING)
     if message.command:
         url = const.RANDOM_URL
     else:
         url = message.text
-    response = await http_client.get(url, follow_redirects=True)
-    if response.status_code == 200:
+    if response := await request(url, message):
         quote = Quote(response.text)
         if quote.images:
             messages = await message.reply_media_group(quote.images)
@@ -47,8 +70,6 @@ async def single_quote(_, message: Message):
             reply_markup=quote.keyboard,
             disable_web_page_preview=True
         )
-    else:
-        await message.reply(const.BAD_REQUEST_MSG)
 
 
 @app.on_message(
@@ -56,15 +77,13 @@ async def single_quote(_, message: Message):
     | filters.text
 )
 async def multiple_quotes(_, message: Message):
-    await message.reply_chat_action(ChatAction.TYPING)
     if message.command:
         url = const.MULTIPLE_QUOTES_COMMANDS[message.command[0]]
     elif const.COMMON_URL_PATTERN.match(message.text):
         url = message.text
     else:
         url = const.SEARCH_URL % message.text
-    response = await http_client.get(url)
-    if response.status_code == 200:
+    if response := await request(url, message):
         quotes_page = QuotesPage(response.text)
         await message.reply(
             str(quotes_page),
@@ -72,8 +91,6 @@ async def multiple_quotes(_, message: Message):
             reply_markup=quotes_page.keyboard,
             disable_web_page_preview=True
         )
-    else:
-        await message.reply(const.BAD_REQUEST_MSG)
 
 
 @app.on_callback_query(
@@ -89,16 +106,13 @@ async def turn_page(_, callback_query: CallbackQuery):
         url = request_msg.text
     else:
         url = const.SEARCH_URL % request_msg.text
-    response = await http_client.get(url, params={'page': page})
-    if response.status_code == 200:
+    if response := await request(url, callback_query=callback_query, page=page):
         quotes_page = QuotesPage(response.text)
         await callback_query.message.edit(
             str(quotes_page),
             reply_markup=quotes_page.keyboard,
             disable_web_page_preview=True
         )
-    else:
-        await callback_query.message.reply(const.BAD_REQUEST_MSG)
 
 
 @app.on_callback_query(
@@ -107,19 +121,13 @@ async def turn_page(_, callback_query: CallbackQuery):
 )
 async def original_request(_, callback_query: CallbackQuery):
     id, = const.ORIGINAL_CALLBACK_PATTERN.match(callback_query.data).groups()
-    response = await http_client.get(const.AJAX_URL % id)
-    if response.status_code == 200:
+    if response := await request(const.AJAX_URL % id, callback_query=callback_query):
         soup = BeautifulSoup(response.json()[1]['data'], 'lxml')
         original_text = utils.optimize(soup.text)
         await callback_query.answer(
             utils.cut(original_text, const.MAX_CALLBACK_ANSWER_LENGTH),
             show_alert=True,
             cache_time=const.RESULT_CACHE_TIME
-        )
-    else:
-        await callback_query.answer(
-            const.BAD_REQUEST_MSG,
-            cache_time=const.ERROR_CACHE_TIME
         )
 
 
@@ -129,21 +137,12 @@ async def original_request(_, callback_query: CallbackQuery):
 )
 async def explanation_request(_, callback_query: CallbackQuery):
     rel_link = callback_query.data[1:]
-    response = await http_client.get(
-        const.BASE_URL % rel_link,
-        follow_redirects=True
-    )
-    if response.status_code == 200:
+    if response := await request(const.BASE_URL % rel_link, callback_query=callback_query):
         quote = Quote(response.text)
         await callback_query.answer(
             utils.cut(quote.explanation, const.MAX_CALLBACK_ANSWER_LENGTH),
             show_alert=True,
             cache_time=const.RESULT_CACHE_TIME
-        )
-    else:
-        await callback_query.answer(
-            const.BAD_REQUEST_MSG,
-            cache_time=const.ERROR_CACHE_TIME
         )
 
 
@@ -152,11 +151,7 @@ async def explanation_request(_, callback_query: CallbackQuery):
     & filters.regex(const.GET_QUOTE_CALLBACK_PATTERN)
 )
 async def quote_by_callback(_, callback_query: CallbackQuery):
-    response = await http_client.get(
-        const.BASE_URL % callback_query.data,
-        follow_redirects=True
-    )
-    if response.status_code == 200:
+    if response := await request(const.BASE_URL % callback_query.data, callback_query=callback_query):
         quote = Quote(response.text)
         if quote.images:
             messages = await app.send_media_group(
@@ -174,12 +169,7 @@ async def quote_by_callback(_, callback_query: CallbackQuery):
                 reply_markup=quote.keyboard,
                 disable_web_page_preview=True
             )
-    else:
-        await app.send_message(
-            callback_query.from_user.id,
-            const.BAD_REQUEST_MSG
-        )
-    await callback_query.answer(cache_time=const.RESULT_CACHE_TIME)
+        await callback_query.answer(cache_time=const.RESULT_CACHE_TIME)
 
 
 @app.on_callback_query()
