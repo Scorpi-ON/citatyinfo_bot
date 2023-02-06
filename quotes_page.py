@@ -100,7 +100,7 @@ class QuotesPage:
         groups = {}
         other_links_tag = self._page_tag.find('div', class_='search__results')
         if other_links_tag:
-            for group in other_links_tag.findChildren(recursive=False):
+            for group in other_links_tag.find_all(recursive=False):
                 content = [
                     {'text': link.text, 'url': link['href']}
                     for link in group.find_all('a')
@@ -111,15 +111,15 @@ class QuotesPage:
     @property
     def pagination(self) -> typing.List[int]:
         pagination = []
-        pagination_tag = self._page_tag.findChild(
+        pagination_tag = self._page_tag.find(
             'div', class_='pagination', recursive=False)
         if not pagination_tag:
-            pagination_tag = self._page_tag.div.findChild(
+            pagination_tag = self._page_tag.div.find(
                 'div', class_='pagination', recursive=False)
         if pagination_tag:
             for page in pagination_tag \
                     .find('ul', class_='pager-regular') \
-                    .findChildren(recursive=False):
+                    .find_all(recursive=False):
                 if page.a:
                     if 'pager-previous' in page['class'] or 'pager-next' in page['class']:
                         pass

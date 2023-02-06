@@ -75,8 +75,8 @@ class Quote:
     def __init__(self, html_page: str):
         self._soup = BeautifulSoup(html_page, 'lxml')
         self._quote_tag = self._soup.article
-        self._content_tag, self._rating_tag, _ = self._quote_tag.findChildren(recursive=False)
-        self._main_body_tag = self._content_tag.findChildren(recursive=False)[0].extract()
+        self._content_tag, self._rating_tag, _ = self._quote_tag.find_all(recursive=False)
+        self._main_body_tag = self._content_tag.find_all(recursive=False)[0].extract()
         self.id, self.type, self.header  # вызываем кеширование свойств, которые используют
         del self._soup, self._quote_tag  # избыточные теги, которые после этого удаляем
 
@@ -87,12 +87,11 @@ class Quote:
     @cached_property
     def type(self) -> Enum:
         if 'node-po' in self._quote_tag['class']:
-            type = Quote.TYPES.po
+            return Quote.TYPES.po
         elif 'node-pritcha' in self._quote_tag['class']:
-            type = Quote.TYPES.pritcha
+            return Quote.TYPES.pritcha
         else:
-            type = Quote.TYPES.quote
-        return type
+            return Quote.TYPES.quote
 
     @cached_property
     def header(self) -> str | None:
@@ -108,7 +107,7 @@ class Quote:
 
     @property
     def text(self) -> str | typing.Tuple[str]:
-        match self._main_body_tag.findChildren(recursive=False):
+        match self._main_body_tag.find_all(recursive=False):
             case original_tag, translated_tag:
                 return original_tag.text.strip(), translated_tag.text.strip()
             case (text_tag,):
@@ -197,7 +196,7 @@ class Quote:
     def rating(self) -> str | None:
         rating_tag = self._rating_tag.find(
             'div', class_='rate-widget-rating__inner')
-        sum, neg, pos = rating_tag.findChildren(recursive=False)
+        sum, neg, pos = rating_tag.find_all(recursive=False)
         sum, neg, pos = sum.text.strip(), neg.text, pos.text
         if (sum, neg, pos) != ('0', '0', '0'):
             if neg == '0':
