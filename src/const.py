@@ -1,6 +1,10 @@
 import re
 
+# Общее
+STR_ENCODING = 'UTF-8'
+
 # Telegram
+MAX_ROW_BUTTON_COUNT = 8
 RESULT_CACHE_TIME = 120
 ERROR_CACHE_TIME = 30
 MAX_CALLBACK_DATA_LENGTH = 64
@@ -22,11 +26,11 @@ QUOTE_PATTERN = re.compile(
     r'^https://citaty.info/(?:quote|po|proverb|pritcha|parable)/(\d+)(?:#comment(?:-form|s))?$'
 )
 ORIGINAL_CALLBACK_PATTERN = re.compile(r'o(\d+)')
-EXPLANATION_CALLBACK_PATTERN = re.compile(r'e(?:quote|po|pritcha|parable)\/\d+')
-GET_QUOTE_CALLBACK_PATTERN = re.compile(r'(?:quote|po|pritcha|parable)\/\d+')
+EXPLANATION_CALLBACK_PATTERN = re.compile(r'e(?:quote|po|pritcha|parable)/\d+')
+GET_QUOTE_CALLBACK_PATTERN = re.compile(r'(?:quote|po|pritcha|parable)/\d+')
 PAGE_PATTERN = re.compile(r'p(\d+)')
 
-COMMON_URL_PATTERN = re.compile(r'^https:\/\/citaty\.info\/.+')
+COMMON_URL_PATTERN = re.compile(r'^https://citaty\.info/.+')
 
 # Команды
 MULTIPLE_QUOTES_COMMANDS = {
