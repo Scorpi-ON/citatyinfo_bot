@@ -17,7 +17,7 @@ async def http_request(
         query: CallbackQuery | None = None,
         page: str | None = None
 ) -> httpx.Response | None:
-    assert (msg is None) != (query is None)
+    assert not (msg and query)
     if msg:
         await msg.reply_chat_action(ChatAction.TYPING)
     response = await http_client.get(
