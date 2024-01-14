@@ -1,3 +1,5 @@
+from functools import cached_property
+
 from selectolax.lexbor import LexborNode
 
 from src import utils
@@ -16,15 +18,15 @@ class ShortQuote(Quote):
         return None
 
     @property
-    def text(self) -> str:
+    def _text(self) -> str:
         text_tags = self._quote_tag.css('div.field-name-body')
         text_parts = []
         for text_tag in text_tags:
             text_parts.append(text_tag.text().strip())
         return '\n'.join(text_parts)
 
-    @property
-    def header(self) -> str:
+    @cached_property
+    def header(self) -> str | None:
         match self.type:
             case QuoteTypes.pritcha:
                 return f'Притча «{self._quote_tag.css_first("h2").text()}»'
@@ -60,8 +62,11 @@ class ShortQuote(Quote):
                 elif characters:
                     return characters
                 else:
-                    return 'Без названия'
+                    return None
 
     def __str__(self):
-        text = utils.optimize_text(f'**{self.header}**\n{self.text}')
+        text = self._text
+        if self.header:
+            text = f'**{self.header}**\n{text}'
+        text = utils.optimize_text(text)
         return utils.trim_text(text, ShortQuote.MAX_LENGTH)
