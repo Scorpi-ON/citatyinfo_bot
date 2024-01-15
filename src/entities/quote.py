@@ -7,6 +7,7 @@ from selectolax.lexbor import LexborHTMLParser, LexborNode
 
 from src import utils, const
 from src.entities.taxonomy_elem import TaxonomyElem
+from src.entities.topic import Topic
 
 
 class QuoteTypes(enum.Enum):
@@ -218,20 +219,17 @@ class Quote:
                     return None
 
     @property
-    def _topics(self) -> typing.Generator[dict, None, None]:
+    def _topics(self) -> typing.Generator[Topic, None, None]:
         topics = []
         topic_tag = self._quote_tag.css_first(f'div.node__topics')
         if topic_tag:
             topics.extend(topic_tag.css('a'))                        # Основные теги, приведённые под цитатой
         topics.extend(self._quote_tag.css('div.field-name-body a'))  # Теги, встроенные в текст цитаты
         for num, topic in enumerate(topics):
-            topic = {'text': topic.text().lower()
-                                         .replace(' ', '_')
-                                         .replace(',_', ' #'),
-                     'url': topic.attributes['href']}  # Преобразуем теги в удобные для использования словари
-            if topic['url'] not in topics:             # и отсеиваем, если такие ссылки уже есть
-                yield topic
-            topics[num] = topic['url']                 # (именно ссылки, а не текст, т. к. он может отличаться)
+            topic = Topic(topic.text(), topic.attributes['href'])  # Преобразуем теги в объекты класса
+            if topic.url not in topics:                            # и отсеиваем, если такие ссылки уже есть
+                yield topic                                        # (именно ссылки, а не текст,
+            topics[num] = topic.url                                # т. к. он может отличаться)
 
     @property
     def _text(self) -> str | typing.Tuple[str, str]:
@@ -271,15 +269,12 @@ class Quote:
     @functools.cached_property
     def formatted_text(self) -> str:
         text = self._text
-        topics = tuple(self._topics)
         if isinstance(text, tuple):
             text = f'**Оригинал:**\n{text[0]}\n\n**Перевод:**\n{text[1]}'
         text += '\n\n'
-        for taxonomy_elem in self._taxonomy:
-            text += f'{taxonomy_elem}\n'
-        text += '\n'
-        for topic in topics:
-            text += f'[#{topic["text"]}]({topic["url"]}) '
+        text += '\n'.join(str(taxonomy_elem) for taxonomy_elem in self._taxonomy)
+        text += '\n\n'
+        text += ' '.join(str(topic) for topic in self._topics)
         return text
 
     @functools.cached_property
