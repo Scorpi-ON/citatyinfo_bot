@@ -1,6 +1,6 @@
 from pyrogram import Client
-from pyrogram.types import Message, CallbackQuery
-from selectolax.lexbor import LexborHTMLParser
+from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, \
+    InputTextMessageContent, InputMediaPhoto, InlineQuery, InlineQueryResultArticle
 
 from src import const, utils
 from src.entities.quote import Quote
@@ -32,14 +32,47 @@ async def single_quote(_, msg: Message):
         quote = Quote(html_page=response.text)
         if quote.images:
             quote_image_msg_group = await msg.reply_media_group(
-                media=quote.images,
+                media=[InputMediaPhoto(url) for url in quote.images],
                 disable_notification=True
             )
             msg = quote_image_msg_group[0]
         await msg.reply(
-            text=str(quote),
+            text=quote.formatted_text,
             quote=bool(quote.images),
-            reply_markup=quote.keyboard,
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton(**button_data) for button_data in row]
+                for row in quote.keyboard_data
+            ]),
+            disable_web_page_preview=True
+        )
+
+
+async def quote_by_callback(app: Client, query: CallbackQuery):
+    """
+    Цитата по относительной ссылке из коллбэка.
+    """
+    if response := await utils.http_request(
+            url=const.BASE_URL % query.data,
+            callback_query=query
+    ):
+        await query.answer(cache_time=const.RESULT_CACHE_TIME)
+        quote = Quote(html_page=response.text)
+        reply_to_message_id = None
+        if quote.images:
+            messages = await app.send_media_group(
+                chat_id=query.from_user.id,
+                media=[InputMediaPhoto(url) for url in quote.images],
+                disable_notification=True
+            )
+            reply_to_message_id = messages[0].id
+        await app.send_message(
+            chat_id=query.from_user.id,
+            text=quote.formatted_text,
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton(**button_data) for button_data in row]
+                for row in quote.keyboard_data
+            ]),
+            reply_to_message_id=reply_to_message_id,
             disable_web_page_preview=True
         )
 
@@ -49,6 +82,8 @@ async def multiple_quotes(_, msg: Message):
     Список цитат по соответствующим им командам,
     ссылке на страницу с цитатами или поисковому запросу.
     """
+    if msg.via_bot and msg.via_bot.is_self:
+        return
     if msg.command:
         url = const.MULTIPLE_QUOTES_COMMANDS[msg.command[0]]
     elif const.COMMON_URL_PATTERN.match(msg.text):
@@ -58,9 +93,12 @@ async def multiple_quotes(_, msg: Message):
     if response := await utils.http_request(url, msg):
         quote_page = QuotePage(response.text)
         await msg.reply(
-            text=str(quote_page),
+            text=quote_page.formatted_text,
             quote=True,
-            reply_markup=quote_page.keyboard,
+            reply_markup=None if not quote_page.keyboard_data else InlineKeyboardMarkup([
+                [InlineKeyboardButton(**button_data) for button_data in row]
+                for row in quote_page.keyboard_data
+            ]),
             disable_web_page_preview=True
         )
 
@@ -115,7 +153,7 @@ async def turn_page(_, query: CallbackQuery):
     """
     Переключение страницы в сообщении с набором цитат.
     """
-    page, = const.PAGE_PATTERN.match(query.data).groups()
+    page = query.data[1:]
     request_msg = query.message.reply_to_message
     request = request_msg.text
     if not request:
@@ -138,8 +176,11 @@ async def turn_page(_, query: CallbackQuery):
     ):
         quote_page = QuotePage(response.text)
         await query.message.edit(
-            text=str(quote_page),
-            reply_markup=quote_page.keyboard,
+            text=quote_page.formatted_text,
+            reply_markup=None if not quote_page.keyboard_data else InlineKeyboardMarkup([
+                [InlineKeyboardButton(**button_data) for button_data in row]
+                for row in quote_page.keyboard_data
+            ]),
             disable_web_page_preview=True
         )
 
@@ -149,12 +190,17 @@ async def original(_, query: CallbackQuery):
     Оригинал цитаты на иностранном языке
     по ID из коллбэка.
     """
-    id_, = const.ORIGINAL_CALLBACK_PATTERN.match(query.data).groups()
-    if response := await utils.http_request(url=const.AJAX_URL % id_, query=query):
-        tree = LexborHTMLParser(response.json()[1]['data'])
-        original_text = utils.optimize_text(tree.text())
+    quote_id = query.data[1:]
+    if response := await utils.http_request(
+            url=const.AJAX_URL % quote_id,
+            callback_query=query
+    ):
+        original_text = Quote.get_original_text(
+            html_page=response.json()[1]['data']
+        )
+        original_text = utils.trim_text(original_text, const.MAX_CALLBACK_ANSWER_LENGTH)
         await query.answer(
-            text=utils.trim_text(original_text, const.MAX_CALLBACK_ANSWER_LENGTH),
+            text=original_text,
             show_alert=True,
             cache_time=const.RESULT_CACHE_TIME
         )
@@ -166,51 +212,25 @@ async def explanation(_, query: CallbackQuery):
     по относительной ссылке из коллбэка.
     """
     rel_link = query.data[1:]
-    if response := await utils.http_request(url=const.BASE_URL % rel_link, query=query):
-        quote = Quote(response.text)
+    if response := await utils.http_request(url=const.BASE_URL % rel_link, callback_query=query):
+        quote = Quote(html_page=response.text)
+        explanation_text = utils.trim_text(quote.explanation, const.MAX_CALLBACK_ANSWER_LENGTH)
         await query.answer(
-            text=utils.trim_text(quote.explanation, const.MAX_CALLBACK_ANSWER_LENGTH),
+            text=explanation_text,
             show_alert=True,
             cache_time=const.RESULT_CACHE_TIME
         )
-
-
-async def quote_by_callback(app: Client, query: CallbackQuery):
-    """
-    Цитата по относительной ссылке из коллбэка.
-    """
-    if response := await utils.http_request(const.BASE_URL % query.data, query=query):
-        quote = Quote(response.text)
-        reply_to_message_id = None
-        if quote.images:
-            messages = await app.send_media_group(
-                chat_id=query.from_user.id,
-                media=quote.images,
-                disable_notification=True
-            )
-            reply_to_message_id = messages[0].id
-        await app.send_message(
-            chat_id=query.from_user.id,
-            text=str(quote),
-            reply_markup=quote.keyboard,
-            reply_to_message_id=reply_to_message_id,
-            disable_web_page_preview=True
-        )
-        await query.answer(cache_time=const.RESULT_CACHE_TIME)
 
 
 async def callback_echo(_, query: CallbackQuery):
     """
     Вывод данных коллбэка в виде уведомления.
     """
-    if isinstance(query.data, str):
-        text = query.data
-        show_alert = False
-    else:
-        text = query.data.decode(const.STR_ENCODING)
-        show_alert = True
+    text = query.data
+    if isinstance(text, bytes):
+        text = text.decode(const.STR_ENCODING)
     await query.answer(
         text=text,
-        show_alert=show_alert,
+        show_alert=True,
         cache_time=const.RESULT_CACHE_TIME
     )

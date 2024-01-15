@@ -53,6 +53,11 @@ class Quote:
     def get_taxonomy_elem(cls, key: str) -> TaxonomyElem:
         return copy.deepcopy(cls.TAXONOMY_TEMPLATES[key])
 
+    @classmethod
+    def get_original_text(cls, html_page: str) -> str:
+        tree = LexborHTMLParser(html_page)
+        return utils.optimize_text(tree.text())
+
     def __init__(
             self,
             html_page: str = None,
@@ -63,9 +68,8 @@ class Quote:
         self._parable_header = None
         if html_page:
             tree = LexborHTMLParser(html_page).body
-            if self.type == QuoteTypes.pritcha:
-                self._parable_header = tree.css_first('h1')
             article_tag = tree.css_first('article')
+            self._parable_header = tree.css_first('h1').text()
         self._quote_with_meta_tag = article_tag
         self._quote_tag = article_tag.css_first('div.node__content')
 
@@ -122,38 +126,12 @@ class Quote:
         """
         return self._quote_tag.css_matches('div.quote__original')
 
-    @property
-    def _text(self) -> str | typing.Tuple[str, str]:
-        """
-        Простой текст цитаты без дополнительных модификаций, заголовков, ссылок и тегов.
-        Returns:
-            *непосредственно текст*
-
-            *оригинал и перевод*: для некоторых цитат на иностранном языке текст делится на эти две части
-        Raises:
-            ValueError: в случае отсутствия текста
-        """
-        translation_tags = self._quote_tag.css('div.field-name-body')
-        match translation_tags:
-            case (text_tag, ):
-                return text_tag.text().strip()
-            case original_tag, translation_tag:
-                return original_tag.text().strip(), translation_tag.text().strip()
-            case _:
-                raise ValueError('Отсутствует текст цитаты')
-
-    @functools.cached_property
-    def short_text(self) -> str:
-        text = self._text
-        if isinstance(text, tuple):
-            text = f'{text[0]}\n\n{text[1]}'
-        return utils.trim_text(utils.optimize_text(text), Quote.SHORT_TEXT_LENGTH)
-
     @functools.cached_property
     def parable_header(self) -> str | None:
         if self.type is QuoteTypes.pritcha:
-            return self._parable_header if self._parable_header \
-                   else self._quote_tag.css_first('h2').text()
+            return utils.optimize_text(
+                self._parable_header or self._quote_tag.css_first('h2').text()
+            )
 
     @property
     def _series(self) -> TaxonomyElem | None:
@@ -251,6 +229,34 @@ class Quote:
                 yield topic
             topics[num] = topic['url']                 # (именно ссылки, а не текст, т. к. он может отличаться)
 
+    @property
+    def _text(self) -> str | typing.Tuple[str, str]:
+        """
+        Простой текст цитаты без дополнительных модификаций, заголовков, ссылок и тегов.
+        Returns:
+            *непосредственно текст*
+
+            *оригинал и перевод*: для некоторых цитат на иностранном языке текст делится на эти две части
+        Raises:
+            ValueError: в случае отсутствия текста
+        """
+        translation_tags = self._quote_tag.css('div.field-name-body')
+        match translation_tags:
+            case (text_tag, ):
+                return utils.optimize_text(text_tag.text())
+            case original_tag, translation_tag:
+                return utils.optimize_text(original_tag.text()), \
+                    utils.optimize_text(translation_tag.text())
+            case _:
+                raise ValueError('Отсутствует текст цитаты')
+
+    @functools.cached_property
+    def short_text(self) -> str:
+        text = self._text
+        if isinstance(text, tuple):
+            text = f'{text[0]}\n\n{text[1]}'
+        return utils.trim_text(text, Quote.SHORT_TEXT_LENGTH)
+
     @functools.cached_property
     def short_formatted_text(self):
         text = self.short_text
@@ -270,7 +276,7 @@ class Quote:
         text += '\n'
         for topic in topics:
             text += f'[#{topic["text"]}]({topic["url"]}) '
-        return utils.optimize_text(text)
+        return text
 
     @functools.cached_property
     def keyboard_data(self) -> typing.List[typing.List[typing.Dict[str, str]]]:
