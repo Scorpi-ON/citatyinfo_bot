@@ -1,14 +1,39 @@
-import functools
 import typing
+import copy
+import functools
 
 from selectolax.lexbor import LexborHTMLParser
 
-from src.entities.quote import Quote
 from src import utils, const
+from src.entities.quote import Quote
+from src.entities.taxonomy_elem import TaxonomyElem
 
 
 class QuotePage:
-    def __init__(self, html_page: str):
+    TAXONOMY_TEMPLATES = {
+        'man': TaxonomyElem('©️', 'Автор'),
+        'character': TaxonomyElem('💬', 'Цитируемые персонажи'),
+        'music': TaxonomyElem('🎤', 'Исполнители'),
+        'book': TaxonomyElem('📖', 'Произведение'),
+        'movie': TaxonomyElem('🎬', 'Фильм'),
+        'cartoon': TaxonomyElem('🧸', 'Мультфильм'),
+        'series': TaxonomyElem('🍿', 'Сериал'),
+        'tv': TaxonomyElem('📺', 'Телешоу'),
+        'theater': TaxonomyElem('🎭', 'Спектакль'),
+        'game': TaxonomyElem('🎮', 'Игра'),
+        'comics': TaxonomyElem('🦸🏻\u200d♂️', 'Комикс'),
+        'anime': TaxonomyElem('🥷🏻', 'Аниме'),
+        'samizdat': TaxonomyElem('✍🏻', 'Самиздат'),
+        'po': TaxonomyElem('📜', 'Фольклор'),
+        'kvn': TaxonomyElem('😂', 'Команда КВН')
+    }
+
+    @classmethod
+    def get_taxonomy_elem(cls, key: str) -> TaxonomyElem:
+        return copy.deepcopy(cls.TAXONOMY_TEMPLATES[key])
+
+    def __init__(self, html_page: str, url: str):
+        self.url = url
         self._tree = LexborHTMLParser(html_page)
         self._page_tag = self._tree.css_first('main > div')
 
@@ -19,13 +44,30 @@ class QuotePage:
         )
 
     @functools.cached_property
+    def common_taxonomy_elem(self) -> TaxonomyElem | None:
+        common_taxonomy_elem = None
+        if self._tree.css_matches('div#breadcrumbs') and self.url and self.url.startswith(const.BASE_URL % ''):
+            for key in QuotePage.TAXONOMY_TEMPLATES:
+                if self.url.startswith(const.BASE_URL % key):
+                    common_taxonomy_elem = self.get_taxonomy_elem(key)
+                    if key == 'music' and '/' in self.url.removeprefix(const.BASE_URL % key):
+                        common_taxonomy_elem = TaxonomyElem('🎵', 'Песня')
+                        taxonomy_elem_content_title = self.header.rsplit(' — ', 1)[1]
+                    else:
+                        taxonomy_elem_content_title = self.header.rsplit(' — ', 1)[0]
+                    common_taxonomy_elem.add_content(taxonomy_elem_content_title, self.url)
+        return common_taxonomy_elem
+
+    @functools.cached_property
     def quotes(self) -> typing.List[Quote]:
         no_results = self._page_tag.css_first('h2')
         if no_results and no_results.text() == 'Ваш поиск не принес результатов':
             return []
         return [
-            Quote(article_tag=quote_tag)
-            for quote_tag in self._page_tag.css('article')
+            Quote(
+                article_tag=article_tag,
+                common_taxonomy_elem=self.common_taxonomy_elem
+            ) for article_tag in self._page_tag.css('article')
         ]
 
     @property

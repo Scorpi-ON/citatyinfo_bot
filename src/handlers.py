@@ -121,7 +121,7 @@ async def multiple_quotes_inline(_, query: InlineQuery):
             url=url,
             page=page if page != '0' else None
     ):
-        quote_page = QuotePage(response.text)
+        quote_page = QuotePage(html_page=response.text, url=url)
         results = []
         for quote in quote_page.quotes:
             results.append(InlineQueryResultArticle(

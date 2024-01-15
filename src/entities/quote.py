@@ -61,11 +61,13 @@ class Quote:
     def __init__(
             self,
             html_page: str = None,
-            article_tag: LexborNode = None
+            article_tag: LexborNode = None,
+            common_taxonomy_elem: TaxonomyElem = None
     ):
-        assert html_page and not article_tag \
+        assert html_page and not (article_tag or common_taxonomy_elem) \
                or article_tag and not html_page
         self._parable_header = None
+        self._common_taxonomy_elem = common_taxonomy_elem
         if html_page:
             tree = LexborHTMLParser(html_page).body
             article_tag = tree.css_first('article')
@@ -151,6 +153,8 @@ class Quote:
 
     @property
     def _taxonomy(self) -> typing.Generator[TaxonomyElem, None, None]:
+        if self._common_taxonomy_elem:
+            yield self._common_taxonomy_elem
         if self.type is QuoteTypes.pritcha:
             taxonomy_elem = self.get_taxonomy_elem('Притча')
             yield taxonomy_elem.add_content(self.parable_header)
