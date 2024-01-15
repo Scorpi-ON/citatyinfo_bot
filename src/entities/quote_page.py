@@ -1,10 +1,8 @@
-from functools import cached_property
 import typing
 
 from selectolax.lexbor import LexborHTMLParser
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from src.entities.short_quote import ShortQuote
+from src.entities.quote import Quote
 from src import utils, const
 
 
@@ -19,16 +17,17 @@ class QuotePage:
         return self._tree.css_first('h1').text()
 
     @property
-    def quotes(self) -> typing.Generator[ShortQuote, None, None]:
+    def quotes(self) -> typing.Generator[Quote, None, None]:
         no_results = self._page_tag.css_first('h2')
-        if not no_results or no_results.text() != 'Ваш поиск не принёс результатов':
-            for quote_tag in self._page_tag.css('article'):
-                short_quote = ShortQuote(quote_tag)
-                self._quote_rel_links.append(short_quote.rel_link)
-                yield short_quote
+        if no_results or no_results.text() == 'Ваш поиск не принёс результатов':
+            yield
+        for quote_tag in self._page_tag.css('article'):
+            quote = Quote(article_tag=quote_tag)
+            self._quote_rel_links.append(quote.rel_link)
+            yield quote
 
     @property
-    def extra_result_groups(self) -> typing.Dict[str, typing.List[typing.Dict[str, str]]]:
+    def _extra_result_groups(self) -> typing.Dict[str, typing.List[typing.Dict[str, str]]]:
         groups = {}
         for group in self._page_tag.css('div.search__results > div.search__results__group'):
             content = [
@@ -39,19 +38,17 @@ class QuotePage:
         return groups
 
     @property
-    def pagination(self) -> typing.List[int]:
-        pagination = []
+    def _pagination(self) -> typing.Generator[int, None, None]:
         pagination_tag = self._page_tag.css_first('div.pagination ul.pager-regular')
         if pagination_tag:
             for page in pagination_tag.css('a'):
                 if page_text := page.text():
-                    pagination.append(int(page_text))
-        return pagination
+                    yield int(page_text)
 
-    @cached_property
-    def _string_representation(self) -> str:
+    @property
+    def formatted_text(self) -> str:
         quotes = tuple(self.quotes)
-        extra_links = self.extra_result_groups
+        extra_links = self._extra_result_groups
         if not self._quote_rel_links and not extra_links:
             return 'Ничего не найдено по этому запросу. 🤷🏻‍♂️'
         text = f'**{self.header}**\n'
@@ -64,24 +61,20 @@ class QuotePage:
             text += '\n'
         return utils.optimize_text(text)
 
-    def __str__(self):
-        return self._string_representation
-
-    @cached_property
-    def keyboard(self) -> InlineKeyboardMarkup | None:
+    @property
+    def keyboard(self) -> typing.List[typing.List[typing.Dict[str, str]]]:
         quote_rows = [[], []]
         number_of_quotes = len(self._quote_rel_links)
         number_of_quotes_per_row = number_of_quotes
         if number_of_quotes > const.MAX_ROW_BUTTON_COUNT:
             number_of_quotes_per_row = number_of_quotes // 2 + number_of_quotes % 2
         for num, rel_link in enumerate(self._quote_rel_links, 1):
-            quote_rows[0 if num <= number_of_quotes_per_row else 1].append(
-                InlineKeyboardButton(str(num), rel_link)
+            row_num = 0 if num <= number_of_quotes_per_row else 1
+            quote_rows[row_num].append(
+                {'text': str(num), 'callback_data': rel_link}
             )
         pagination_row = [
-            InlineKeyboardButton(f'стр. {page}', f'p{page - 1}')
-            for page in self.pagination
+            {'text': f'стр. {page}', 'callback_data': f'p{page - 1}'}
+            for page in self._pagination
         ]
-        rows = [*quote_rows, pagination_row]
-        if any(rows):
-            return InlineKeyboardMarkup(rows)
+        return [*quote_rows, pagination_row]
