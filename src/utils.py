@@ -17,9 +17,20 @@ async def http_request(
         callback_query: CallbackQuery | None = None,
         page: str | None = None
 ) -> httpx.Response | None:
-    assert not (msg and query)
-    if msg:
-        await msg.reply_chat_action(ChatAction.TYPING)
+    assert not (message and callback_query)
+    if message:
+        await message.reply_chat_action(ChatAction.TYPING)
+    try:
+        url = httpx.URL(url)
+    except httpx.InvalidURL:
+        if message:
+            await message.reply(text=const.BAD_REQUEST_MSG)
+        elif callback_query:
+            await callback_query.answer(
+                text=const.BAD_REQUEST_MSG,
+                cache_time=const.ERROR_CACHE_TIME
+            )
+        return
     response = await http_client.get(
         url=url,
         params={'page': page} if page else None,
