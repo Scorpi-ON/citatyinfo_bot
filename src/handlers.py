@@ -126,20 +126,29 @@ async def multiple_quotes_inline(_, query: InlineQuery):
     ):
         quote_page = QuotePage(html_page=response.text, url=url)
         results = []
-        for quote in quote_page.quotes:
+        if not quote_page.quotes:
             results.append(InlineQueryResultArticle(
-                title=quote.header or quote_page.header,
-                description=quote.short_text,
+                title=query.query,
+                description=const.NOTHING_FOUND_MSG,
                 input_message_content=InputTextMessageContent(
-                    message_text=quote.formatted_text,
-                    disable_web_page_preview=True
-                ),
-                thumb_url=quote.images[0] if quote.images else None,
-                reply_markup=InlineKeyboardMarkup([
-                    [InlineKeyboardButton(**button_data) for button_data in row]
-                    for row in quote.keyboard_data
-                ])
+                    message_text=f'__{query.query}__\n\n{const.NOTHING_FOUND_MSG}'
+                )
             ))
+        else:
+            for quote in quote_page.quotes:
+                results.append(InlineQueryResultArticle(
+                    title=quote.header or quote_page.header,
+                    description=quote.short_text,
+                    input_message_content=InputTextMessageContent(
+                        message_text=quote.formatted_text,
+                        disable_web_page_preview=True
+                    ),
+                    thumb_url=quote.images[0] if quote.images else None,
+                    reply_markup=InlineKeyboardMarkup([
+                        [InlineKeyboardButton(**button_data) for button_data in row]
+                        for row in quote.keyboard_data
+                    ])
+                ))
         if not quote_page.keyboard_data or not quote_page.keyboard_data[-1]:
             page = None
         elif page:
