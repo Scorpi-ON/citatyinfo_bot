@@ -90,8 +90,11 @@ async def multiple_quotes(_, msg: Message):
         url = msg.text
     else:
         url = const.SEARCH_URL % msg.text
-    if response := await utils.http_request(url, msg):
-        quote_page = QuotePage(response.text)
+    if response := await utils.http_request(
+            url=url,
+            message=msg
+    ):
+        quote_page = QuotePage(html_page=response.text, url=url)
         await msg.reply(
             text=quote_page.formatted_text,
             quote=True,
@@ -174,7 +177,7 @@ async def turn_page(_, query: CallbackQuery):
             callback_query=query,
             page=page if page != '0' else None
     ):
-        quote_page = QuotePage(response.text)
+        quote_page = QuotePage(html_page=response.text, url=url)
         await query.message.edit(
             text=quote_page.formatted_text,
             reply_markup=None if not quote_page.keyboard_data else InlineKeyboardMarkup([
@@ -212,7 +215,10 @@ async def explanation(_, query: CallbackQuery):
     по относительной ссылке из коллбэка.
     """
     rel_link = query.data[1:]
-    if response := await utils.http_request(url=const.BASE_URL % rel_link, callback_query=query):
+    if response := await utils.http_request(
+            url=const.BASE_URL % rel_link,
+            callback_query=query
+    ):
         quote = Quote(html_page=response.text)
         explanation_text = utils.trim_text(quote.explanation, const.MAX_CALLBACK_ANSWER_LENGTH)
         await query.answer(
