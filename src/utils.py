@@ -39,14 +39,14 @@ def optimize_text(text: str) -> str:
     """
     Сокращение текста путём замены некоторых символов.
     """
-    ordinary_replacement_sequences = {'...': '…', ' – ': ' — '}
-    cyclic_replacement_sequences = {'  ': ' ', '\n ': '\n', '\n\n\n': '\n\n'}
+    cyclic_replacement_sequences = {'  ': ' ', '\n\n\n': '\n\n'}
+    ordinary_replacement_sequences = {'...': '…', ' – ': ' — ', '–': '—', '**': '@@', '@*': '@@', '\n ': '\n'}
     text = text.strip()
-    for old_seq, new_seq in ordinary_replacement_sequences.items():
-        text = text.replace(old_seq, new_seq)
     for old_seq, new_seq in cyclic_replacement_sequences.items():
         while old_seq in text:
             text = text.replace(old_seq, new_seq)
+    for old_seq, new_seq in ordinary_replacement_sequences.items():
+        text = text.replace(old_seq, new_seq)
     return text
 
 
@@ -57,23 +57,3 @@ def trim_text(text: str, length: int) -> str:
     if len(text) > length:
         text = text[:length - 1].rstrip() + '…'
     return text
-
-
-# def benchmark(func, repeat=1, middle=True):
-#     """
-#     Измеряет время выполнения функции repeat раз по среднему или суммарному времени.
-#     Вероятно, колхоз.
-#     """
-#     times = []
-#     for _ in range(repeat):
-#         start = datetime.now()
-#         result = func()
-#         end = datetime.now()
-#         times.append(end - start)
-#     sum_ = 0
-#     for time in times:
-#         sum_ += time.microseconds
-#     if middle:
-#         sum_ /= len(times)
-#     print(func.__name__, 'executed in', sum_, 'mcs.')
-#     return result
