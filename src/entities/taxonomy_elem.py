@@ -1,24 +1,27 @@
-from functools import cached_property
+import functools
+
+from src import utils
 
 
 class TaxonomyElem:
     def __init__(self, emoji: str, title: str):
         self.emoji = emoji
-        self.title = title
+        self.title = utils.optimize_text(title)
         self._content = []
 
     def add_content(self, text: str,
                     url: str | None = None):
         self._content.append(
-            {'text': text, 'url': url} if url else text
+            {'text': utils.optimize_text(text), 'url': url}
+            if url else text
         )
         return self
 
-    @cached_property
+    @functools.cached_property
     def count(self) -> int:
         return len(self._content)
 
-    @cached_property
+    @functools.cached_property
     def plain_text(self) -> str:
         text = []
         for content_item in self._content:
