@@ -1,6 +1,6 @@
 import uvloop
 from pyrogram import filters
-from pyrogram.handlers import MessageHandler, CallbackQueryHandler
+from pyrogram.handlers import MessageHandler, CallbackQueryHandler, InlineQueryHandler
 
 from src.handlers import *
 
@@ -19,6 +19,7 @@ handlers = (
         multiple_quotes,
         filters.command(list(const.MULTIPLE_QUOTES_COMMANDS)) | filters.text
     ),
+
     CallbackQueryHandler(
         turn_page,
         str_query_filter & filters.regex(const.PAGE_PATTERN)
@@ -35,7 +36,9 @@ handlers = (
         quote_by_callback,
         str_query_filter & filters.regex(const.GET_QUOTE_CALLBACK_PATTERN)
     ),
-    CallbackQueryHandler(callback_echo)
+    CallbackQueryHandler(callback_echo),
+
+    InlineQueryHandler(multiple_quotes_inline)
 )
 
 uvloop.install()

@@ -65,6 +65,52 @@ async def multiple_quotes(_, msg: Message):
         )
 
 
+async def multiple_quotes_inline(_, query: InlineQuery):
+    """
+    Список цитат по соответствующим им командам,
+    ссылке на страницу с цитатами или поисковому запросу.
+    """
+    if not query.query:
+        return
+    if query.query in const.MULTIPLE_QUOTES_COMMANDS:
+        url = const.MULTIPLE_QUOTES_COMMANDS[query.query]
+    elif const.COMMON_URL_PATTERN.match(query.query):
+        url = query.query
+    else:
+        url = const.SEARCH_URL % query.query
+    page = query.offset or None
+    if response := await utils.http_request(
+            url=url,
+            page=page if page != '0' else None
+    ):
+        quote_page = QuotePage(response.text)
+        results = []
+        for quote in quote_page.quotes:
+            results.append(InlineQueryResultArticle(
+                title=quote.header or quote_page.header,
+                description=quote.short_text,
+                input_message_content=InputTextMessageContent(
+                    message_text=quote.formatted_text,
+                    disable_web_page_preview=True
+                ),
+                thumb_url=quote.images[0] if quote.images else None,
+                reply_markup=InlineKeyboardMarkup([
+                    [InlineKeyboardButton(**button_data) for button_data in row]
+                    for row in quote.keyboard_data
+                ])
+            ))
+        if not quote_page.keyboard_data or not quote_page.keyboard_data[-1]:
+            page = None
+        elif page:
+            page = str(int(page) + 1)
+        else:
+            page = '1'
+        await query.answer(
+            results=results,
+            next_offset=page
+        )
+
+
 async def turn_page(_, query: CallbackQuery):
     """
     Переключение страницы в сообщении с набором цитат.
