@@ -13,23 +13,23 @@ http_client = httpx.AsyncClient(
 
 async def http_request(
         url: str,
-        msg: Message | None = None,
-        query: CallbackQuery | None = None,
+        message: Message | None = None,
+        callback_query: CallbackQuery | None = None,
         page: str | None = None
 ) -> httpx.Response | None:
     assert not (msg and query)
     if msg:
         await msg.reply_chat_action(ChatAction.TYPING)
     response = await http_client.get(
-        url,
+        url=url,
         params={'page': page} if page else None,
     )
     if response.status_code == httpx.codes.OK:
         return response
-    if msg:
-        await msg.reply(text=const.BAD_REQUEST_MSG)
-    elif query:
-        await query.answer(
+    if message:
+        await message.reply(text=const.BAD_REQUEST_MSG)
+    elif callback_query:
+        await callback_query.answer(
             text=const.BAD_REQUEST_MSG,
             cache_time=const.ERROR_CACHE_TIME
         )

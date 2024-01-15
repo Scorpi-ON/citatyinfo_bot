@@ -29,7 +29,7 @@ async def single_quote(_, msg: Message):
     else:
         url = msg.text
     if response := await utils.http_request(url, msg):
-        quote = Quote(response.text)
+        quote = Quote(html_page=response.text)
         if quote.images:
             quote_image_msg_group = await msg.reply_media_group(
                 media=quote.images,
@@ -87,7 +87,7 @@ async def turn_page(_, query: CallbackQuery):
         url = const.SEARCH_URL % request
     if response := await utils.http_request(
             url=url,
-            query=query,
+            callback_query=query,
             page=page if page != '0' else None
     ):
         quote_page = QuotePage(response.text)
