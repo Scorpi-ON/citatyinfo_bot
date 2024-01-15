@@ -97,7 +97,7 @@ class QuotePage:
     def formatted_text(self) -> str:
         extra_links = self._extra_result_groups
         if not self.quotes and not extra_links:
-            return 'Ничего не найдено по этому запросу. 🤷🏻‍♂️'
+            return const.NOTHING_FOUND_MSG
         text = f'**{self.header}**\n'
         for num, quote in enumerate(self.quotes, 1):
             text += f'\n**{num}.** {quote.short_formatted_text}\n'
