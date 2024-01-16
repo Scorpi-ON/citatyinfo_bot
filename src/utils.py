@@ -51,7 +51,7 @@ def optimize_text(text: str) -> str:
     Сокращение текста путём замены некоторых символов.
     """
     cyclic_replacement_sequences = {'  ': ' ', '\n\n\n': '\n\n'}
-    ordinary_replacement_sequences = {'...': '…', ' – ': ' — ', '–': '—', '**': '@@', '@*': '@@', '\n ': '\n'}
+    ordinary_replacement_sequences = {'...': '…', ' – ': ' — ', '**': '@@', '@*': '@@', '\n ': '\n'}
     text = text.strip()
     for old_seq, new_seq in cyclic_replacement_sequences.items():
         while old_seq in text:
