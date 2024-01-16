@@ -2,8 +2,7 @@ from pyrogram import Client
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, \
     InputTextMessageContent, InputMediaPhoto, InlineQuery, InlineQueryResultArticle
 
-import const
-import utils
+from common import utils, const
 from entities import Quote, QuotePage
 
 

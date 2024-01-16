@@ -5,9 +5,9 @@ import functools
 
 from selectolax.lexbor import LexborHTMLParser, LexborNode
 
-from .. import utils, const
-from _taxonomy_elem import TaxonomyElem
-from _topic import Topic
+from common import const, utils
+from ._taxonomy_elem import TaxonomyElem
+from ._topic import Topic
 
 
 class QuoteTypes(enum.Enum):

@@ -2,7 +2,7 @@ import httpx
 from pyrogram.types import CallbackQuery, Message
 from pyrogram.enums import ChatAction
 
-import const
+from . import const
 
 
 http_client = httpx.AsyncClient(

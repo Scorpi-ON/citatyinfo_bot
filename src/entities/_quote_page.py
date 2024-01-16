@@ -4,9 +4,9 @@ import functools
 
 from selectolax.lexbor import LexborHTMLParser
 
-from .. import utils, const
-from _quote import Quote
-from _taxonomy_elem import TaxonomyElem
+from common import const, utils
+from ._quote import Quote
+from ._taxonomy_elem import TaxonomyElem
 
 
 class QuotePage:
