@@ -1,4 +1,5 @@
 import uvloop
+from dotenv import dotenv_values
 from pyrogram import filters
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler, InlineQueryHandler
 
@@ -42,7 +43,7 @@ handlers = (
 )
 
 uvloop.install()
-app = Client('Bot')
+app = Client(dotenv_values()['name'])
 for handler in handlers:
     app.add_handler(handler)
 app.run()
