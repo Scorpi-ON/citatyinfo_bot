@@ -2,9 +2,9 @@ from pyrogram import Client
 from pyrogram.types import Message, CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, \
     InputTextMessageContent, InputMediaPhoto, InlineQuery, InlineQueryResultArticle
 
-from src import const, utils
-from src.entities.quote import Quote
-from src.entities.quote_page import QuotePage
+import const
+import utils
+from entities import Quote, QuotePage
 
 
 async def help_(_, msg: Message):

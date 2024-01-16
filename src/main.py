@@ -3,7 +3,7 @@ from dotenv import dotenv_values
 from pyrogram import filters
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler, InlineQueryHandler
 
-from src.handlers import *
+from handlers import *
 
 
 str_query_filter = filters.create(
