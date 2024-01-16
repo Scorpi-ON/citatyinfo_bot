@@ -43,7 +43,7 @@ handlers = (
 )
 
 uvloop.install()
-app = Client(dotenv_values()['name'])
+app = Client(**dotenv_values())
 for handler in handlers:
     app.add_handler(handler)
 app.run()
