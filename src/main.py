@@ -1,4 +1,5 @@
-import uvloop
+import sys
+
 from dotenv import dotenv_values
 from pyrogram import filters
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler, InlineQueryHandler
@@ -42,8 +43,24 @@ handlers = (
     InlineQueryHandler(multiple_quotes_inline)
 )
 
-uvloop.install()
-app = Client(**dotenv_values())
-for handler in handlers:
-    app.add_handler(handler)
-app.run()
+
+if __name__ == '__main__':
+    TEST_MODE = True
+    credentials = dotenv_values()
+    api_id = credentials['API_ID']
+    api_hash = credentials['API_HASH']
+    if TEST_MODE:
+        name = 'TestBot'
+        bot_token = credentials['TEST_TOKEN']
+    else:
+        name = 'Bot'
+        bot_token = credentials['TOKEN']
+
+    if sys.platform != 'win32':
+        import uvloop
+        uvloop.install()
+
+    app = Client(name, api_id, api_hash, bot_token=bot_token, test_mode=TEST_MODE)
+    for handler in handlers:
+        app.add_handler(handler)
+    app.run()
