@@ -72,7 +72,9 @@ class Quote:
         if html_page:
             tree = LexborHTMLParser(html_page).body
             article_tag = tree.css_first('article')
-            self._parable_header = tree.css_first('h1').text()
+            self._parable_header = tree.css_first('h1')
+            if self._parable_header:  # Без проверки ломаются случайные цитаты
+                self._parable_header = self._parable_header.text()
         self._quote_with_meta_tag = article_tag
         self._quote_tag = article_tag.css_first('div.node__content')
 

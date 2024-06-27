@@ -25,7 +25,7 @@ RANDOM_URL = BASE_URL % 'random'
 
 # Регулярки
 QUOTE_PATTERN = re.compile(
-    r'^https://citaty.info/(?:quote|po|proverb|pritcha|parable)/(\d+)(?:#comment(?:-form|s))?$'
+    r'^https://citaty.info/(?:random|(?:quote|po|proverb|pritcha|parable)/(\d+)(?:#comment(?:-form|s))?)$'
 )
 ORIGINAL_CALLBACK_PATTERN = re.compile(r'o(\d+)')
 EXPLANATION_CALLBACK_PATTERN = re.compile(r'e(?:quote|po|pritcha|parable)/\d+')
