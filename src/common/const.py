@@ -16,16 +16,16 @@ NOTHING_FOUND_MSG = 'По этому запросу ничего не найде
 
 # Ссылки
 BASE_URL = 'https://citaty.info/%s'
+TOP_RATING_URL = BASE_URL % 'rating/%s'
 CATEGORY_URL = BASE_URL % '%s/quotes'
 SEARCH_URL = BASE_URL % 'search/site/%s'
-TOP_RATING_URL = BASE_URL % 'rating/%s'
 QUOTE_URL = BASE_URL % 'quote/%s'
 AJAX_URL = BASE_URL % 'ajax/en_body/%s'
 RANDOM_URL = BASE_URL % 'random'
 
 # Регулярки
 QUOTE_PATTERN = re.compile(
-    r'^https://citaty.info/(?:random|(?:quote|po|proverb|pritcha|parable)/(\d+)(?:#comment(?:-form|s))?)$'
+    fr'^{BASE_URL}(?:random|(?:quote|po|proverb|pritcha|parable)/(\d+)(?:#comment(?:-form|s))?)$'
 )
 ORIGINAL_CALLBACK_PATTERN = re.compile(r'o(\d+)')
 EXPLANATION_CALLBACK_PATTERN = re.compile(r'e(?:quote|po|pritcha|parable)/\d+')
