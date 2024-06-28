@@ -1,61 +1,39 @@
-import typing
-import enum
-import copy
+import json
 import functools
 
 from selectolax.lexbor import LexborHTMLParser, LexborNode
 
-from common import const, utils
+from ._quote_types import QuoteTypes
 from ._taxonomy_elem import TaxonomyElem
 from ._topic import Topic
-
-
-class QuoteTypes(enum.Enum):
-    """
-    Типы цитат, использующиеся в ссылках на них.
-    Examples:
-        ``quote``: обычная цитата — https://citaty.info/quote/35045
-
-        ``po``: пословица / поговорка — https://citaty.info/po/247673
-        (подходят также цитаты вида https://citaty.info/proverb/110707, если вместо ``proverb`` использовать ``po``)
-
-        ``pritcha``: притча — https://citaty.info/pritcha/121736
-    """
-    quote = 0
-    po = 1
-    pritcha = 2
+import utils
 
 
 class Quote:
-    SHORT_TEXT_LENGTH = 250
-    TAXONOMY_TEMPLATES = {
-        'Автор цитаты': TaxonomyElem('©️', 'Автор'),
-        'Автор неизвестен': TaxonomyElem('©️', 'Автор').add_content('неизвестен'),
-        'Цитируемый персонаж': TaxonomyElem('💬', 'Цитируемые персонажи'),
-        'Исполнитель': TaxonomyElem('🎤', 'Исполнители'),
-        'Цитата из книги': TaxonomyElem('📖', 'Произведение'),
-        'Цитата из фильма': TaxonomyElem('🎬', 'Фильм'),
-        'Цитата из мультфильма': TaxonomyElem('🧸', 'Мультфильм'),
-        'Цитата из сериала': TaxonomyElem('🍿', 'Сериал'),
-        'Цитата из телешоу': TaxonomyElem('📺', 'Телешоу'),
-        'Цитата из спектакля': TaxonomyElem('🎭', 'Спектакль'),
-        'Цитата из игры': TaxonomyElem('🎮', 'Игра'),
-        'Цитата из комикса': TaxonomyElem('🦸🏻\u200d♂️', 'Комикс'),
-        'Цитата из аниме': TaxonomyElem('🥷🏻', 'Аниме'),
-        'Песня': TaxonomyElem('🎵', 'Песня'),
-        'Самиздат': TaxonomyElem('✍🏻', 'Самиздат'),
-        'Притча': TaxonomyElem('☯', 'Притча'),
-        'Фольклор': TaxonomyElem('📜', 'Фольклор'),
-        'Эпизод': TaxonomyElem('📀', 'Эпизод'),
-        'КВН': TaxonomyElem('😂', 'Команда КВН')
-    }
+    """
+    Единичная цитата.
+    """
+    with open('./taxonomy_templates_by_tags.json') as f:
+        raw_taxonomy_templates: list = json.load(f)
+    TAXONOMY_TEMPLATES = {}
+    for template in raw_taxonomy_templates:
+        TAXONOMY_TEMPLATES[template['title']] = TaxonomyElem(
+            title=template['replacement'],
+            content=template['content']
+        )
 
     @classmethod
     def get_taxonomy_elem(cls, key: str) -> TaxonomyElem:
-        return copy.deepcopy(cls.TAXONOMY_TEMPLATES[key])
+        """
+        Копия элемента таксономии для редактирования.
+        """
+        return cls.TAXONOMY_TEMPLATES[key].copy()
 
     @classmethod
     def get_original_text(cls, html_page: str) -> str:
+        """
+        Оригинал цитаты, если есть.
+        """
         tree = LexborHTMLParser(html_page)
         return utils.optimize_text(tree.text())
 
@@ -73,7 +51,7 @@ class Quote:
             tree = LexborHTMLParser(html_page).body
             article_tag = tree.css_first('article')
             self._parable_header = tree.css_first('h1')
-            if self._parable_header:  # Без проверки ломаются случайные цитаты
+            if self._parable_header is not None:  # Без проверки ломаются случайные цитаты
                 self._parable_header = self._parable_header.text()
         self._quote_with_meta_tag = article_tag
         self._quote_tag = article_tag.css_first('div.node__content')
@@ -111,7 +89,10 @@ class Quote:
         return f'{self.type.name}/{self.id}'
 
     @functools.cached_property
-    def images(self) -> typing.List[str] | None:
+    def image_links(self) -> list[str]:
+        """
+        Ссылки на картинки в цитате.
+        """
         images = []
         for img_tag in self._quote_tag.css('img'):
             images.append(img_tag.attributes['src'])
@@ -119,6 +100,9 @@ class Quote:
 
     @functools.cached_property
     def explanation(self) -> str | None:
+        """
+        Пояснение к цитате, если есть
+        """
         explanation_tag = self._quote_tag.css_first('div.field-name-field-description div.field-item')
         if explanation_tag is not None:
             explanation_text = explanation_tag.text()
@@ -133,6 +117,9 @@ class Quote:
 
     @functools.cached_property
     def parable_header(self) -> str | None:
+        """
+        Название притчи, если это притча.
+        """
         if self.type is QuoteTypes.pritcha:
             return utils.optimize_text(
                 self._parable_header or self._quote_tag.css_first('h2').text()
@@ -141,7 +128,7 @@ class Quote:
     @property
     def _series(self) -> TaxonomyElem | None:
         """
-        Дополнительные метаданные для сериалов (сезон, серия, эпизод и т. д.)
+        Дополнительные метаданные для сериала (сезон, серия, эпизод и т. д.), если это сериал
         """
         if self.type is QuoteTypes.quote:
             series_metadata_tag = self._quote_tag.css_first('div.node__series')
@@ -154,13 +141,17 @@ class Quote:
                         taxonomy_elem.add_content(series_tag.text())
                 return taxonomy_elem
 
-    @property
-    def _taxonomy(self) -> typing.Generator[TaxonomyElem, None, None]:
+    @functools.cached_property
+    def taxonomy(self) -> list[TaxonomyElem]:
+        """
+        Все элементы таксономии цитаты.
+        """
+        taxonomy_elems = []
         if self._common_taxonomy_elem:
-            yield self._common_taxonomy_elem
+            taxonomy_elems.append(self._common_taxonomy_elem)
         if self.type is QuoteTypes.pritcha:
             taxonomy_elem = self.get_taxonomy_elem('Притча')
-            yield taxonomy_elem.add_content(self.parable_header)
+            taxonomy_elems.append(taxonomy_elem.add_content(self.parable_header))
         else:
             taxonomy_tags = self._quote_with_meta_tag.css('div.node__content > div.field-type-taxonomy-term-reference')
             for tag in taxonomy_tags:
@@ -177,22 +168,26 @@ class Quote:
                     if key != 'Автор неизвестен':
                         for link_tag in tag.css('a'):
                             taxonomy_elem.add_content(link_tag.text(), link_tag.attributes['href'])
-                    yield taxonomy_elem
+                    taxonomy_elems.append(taxonomy_elem)
             if series := self._series:
-                yield series
+                taxonomy_elems.append(series)
+        return taxonomy_elems
 
     @functools.cached_property
     def header(self) -> str | None:
+        """
+        Заголовок цитаты для отображения в списке коротких цитат.
+        """
         match self.type:
             case QuoteTypes.pritcha:
                 return f'Притча «{self.parable_header}»'
             case QuoteTypes.po:
-                for taxonomy_elem in self._taxonomy:
+                for taxonomy_elem in self.taxonomy:
                     if taxonomy_elem.title == 'Фольклор':
                         return taxonomy_elem.plain_text
             case QuoteTypes.quote:
                 authors = source = characters = None
-                for taxonomy_elem in self._taxonomy:
+                for taxonomy_elem in self.taxonomy:
                     match taxonomy_elem.title:
                         case 'Эпизод':
                             continue
@@ -220,21 +215,25 @@ class Quote:
                 else:
                     return None
 
-    @property
-    def _topics(self) -> typing.Generator[Topic, None, None]:
-        topics = []
+    @functools.cached_property
+    def topics(self) -> list[Topic]:
+        """
+        Хэштеги (темы) цитаты.
+        """
+        topics, used_topic_urls = [], []
         topic_tag = self._quote_tag.css_first(f'div.node__topics')
         if topic_tag:
-            topics.extend(topic_tag.css('a'))                        # Основные теги, приведённые под цитатой
-        topics.extend(self._quote_tag.css('div.field-name-body a'))  # Теги, встроенные в текст цитаты
-        for num, topic in enumerate(topics):
+            used_topic_urls.extend(topic_tag.css('a'))                        # Основные теги, приведённые под цитатой
+        used_topic_urls.extend(self._quote_tag.css('div.field-name-body a'))  # Теги, встроенные в текст цитаты
+        for num, topic in enumerate(used_topic_urls):
             topic = Topic(topic.text(), topic.attributes['href'])  # Преобразуем теги в объекты класса
-            if topic.url not in topics:                            # и отсеиваем, если такие ссылки уже есть
-                yield topic                                        # (именно ссылки, а не текст,
-            topics[num] = topic.url                                # т. к. он может отличаться)
+            if topic.url not in used_topic_urls:                   # и отсеиваем, если такие ссылки уже есть
+                topics.append(topic)                               # (именно ссылки, а не текст,
+            used_topic_urls[num] = topic.url                       # т. к. он может отличаться)
+        return topics
 
-    @property
-    def _text(self) -> str | typing.Tuple[str, str]:
+    @functools.cached_property
+    def text(self) -> str | tuple[str, str]:
         """
         Простой текст цитаты без дополнительных модификаций, заголовков, ссылок и тегов.
         Returns:
@@ -246,48 +245,10 @@ class Quote:
         """
         translation_tags = self._quote_tag.css('div.field-name-body')
         match translation_tags:
-            case (text_tag, ):
+            case (text_tag,):
                 return utils.optimize_text(text_tag.text())
             case original_tag, translation_tag:
                 return utils.optimize_text(original_tag.text()), \
                     utils.optimize_text(translation_tag.text())
             case _:
                 raise ValueError('Отсутствует текст цитаты')
-
-    @functools.cached_property
-    def short_text(self) -> str:
-        text = self._text
-        if isinstance(text, tuple):
-            text = f'{text[0]}\n\n{text[1]}'
-        return utils.trim_text(text, Quote.SHORT_TEXT_LENGTH)
-
-    @functools.cached_property
-    def short_formatted_text(self):
-        text = self.short_text
-        if self.header:
-            text = f'**{self.header}**\n{text}'
-        return utils.trim_text(text, Quote.SHORT_TEXT_LENGTH)
-
-    @functools.cached_property
-    def formatted_text(self) -> str:
-        text = self._text
-        if isinstance(text, tuple):
-            text = f'**Оригинал:**\n{text[0]}\n\n**Перевод:**\n{text[1]}'
-        text += '\n\n'
-        text += '\n'.join(str(taxonomy_elem) for taxonomy_elem in self._taxonomy)
-        text += '\n\n'
-        text += ' '.join(str(topic) for topic in self._topics)
-        return text
-
-    @functools.cached_property
-    def keyboard_data(self) -> typing.List[typing.List[typing.Dict[str, str]]]:
-        row = []
-        if explanation := self.explanation:
-            explanation = explanation.encode(const.STR_ENCODING)
-            if len(explanation) > const.MAX_CALLBACK_DATA_LENGTH:
-                explanation = f'e{self.rel_link}'
-            row.append({'text': '🔮 Пояснение', 'callback_data': explanation})
-        if self.has_original:
-            row.append({'text': '🇬🇧 Оригинал', 'callback_data': f'o{self.id}'})
-        row.append({'text': '🔗 Открыть', 'url': const.BASE_URL % self.rel_link})
-        return [row]
