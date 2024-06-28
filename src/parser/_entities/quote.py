@@ -3,17 +3,17 @@ import functools
 
 from selectolax.lexbor import LexborHTMLParser, LexborNode
 
-from ._quote_types import QuoteTypes
-from ._taxonomy_elem import TaxonomyElem
-from ._topic import Topic
-from . import const, utils
+from .. import const, utils
+from .quote_types import QuoteTypes
+from .taxonomy_elem import TaxonomyElem
+from .topic import Topic
 
 
 class Quote:
     """
     Единичная цитата.
     """
-    with open('src/parser/taxonomy_templates_by_tags.json', encoding=const.STR_ENCODING) as f:
+    with open('src/parser/data/taxonomy_templates_by_tags.json', encoding=const.STR_ENCODING) as f:
         raw_taxonomy_templates: list = json.load(f)
     TAXONOMY_TEMPLATES = {}
     for template in raw_taxonomy_templates:

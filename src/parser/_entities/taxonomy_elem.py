@@ -1,6 +1,6 @@
 import functools
 
-from . import utils
+from .. import utils
 
 
 class TaxonomyElem:

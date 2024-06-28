@@ -3,16 +3,16 @@ import functools
 
 from selectolax.lexbor import LexborHTMLParser
 
-from ._quote import Quote
-from ._taxonomy_elem import TaxonomyElem
-from . import const, utils
+from .. import const, utils
+from .quote import Quote
+from .taxonomy_elem import TaxonomyElem
 
 
 class QuotePage:
     """
     Страница с цитатами.
     """
-    with open('src/parser/taxonomy_templates_by_links.json', encoding=const.STR_ENCODING) as f:
+    with open('src/parser/data/taxonomy_templates_by_links.json', encoding=const.STR_ENCODING) as f:
         raw_taxonomy_templates: list = json.load(f)
     TAXONOMY_TEMPLATES = {}
     for template in raw_taxonomy_templates:
