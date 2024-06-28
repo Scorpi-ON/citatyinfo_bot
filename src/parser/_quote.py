@@ -18,6 +18,7 @@ class Quote:
     TAXONOMY_TEMPLATES = {}
     for template in raw_taxonomy_templates:
         TAXONOMY_TEMPLATES[template['page_title']] = TaxonomyElem(
+            emoji=template['emoji'],
             title=template['replacement'],
             content=template['content']
         )
@@ -184,7 +185,7 @@ class Quote:
             case QuoteTypes.po:
                 for taxonomy_elem in self.taxonomy:
                     if taxonomy_elem.title == 'Фольклор':
-                        return taxonomy_elem.plain_text
+                        return taxonomy_elem.plain_content
             case QuoteTypes.quote:
                 authors = source = characters = None
                 for taxonomy_elem in self.taxonomy:
@@ -195,15 +196,15 @@ class Quote:
                             characters = 'Персонаж'
                             if taxonomy_elem.count > 1:
                                 characters += 'и'
-                            characters += f' {taxonomy_elem.plain_text}'
+                            characters += f' {taxonomy_elem.plain_content}'
                         case 'Автор' | 'Исполнители':
-                            authors = taxonomy_elem.plain_text
+                            authors = taxonomy_elem.plain_content
                             if authors == 'неизвестен':
                                 authors = 'Неизвестный автор'
                         case 'Песня':
-                            source = taxonomy_elem.plain_text
+                            source = taxonomy_elem.plain_content
                         case _:
-                            source = f'{taxonomy_elem.title.lower()} «{taxonomy_elem.plain_text}»'
+                            source = f'{taxonomy_elem.title.lower()} «{taxonomy_elem.plain_content}»'
                 if authors and source:
                     return f'{authors} — {source}'
                 elif source:

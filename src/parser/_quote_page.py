@@ -16,7 +16,10 @@ class QuotePage:
         raw_taxonomy_templates: list = json.load(f)
     TAXONOMY_TEMPLATES = {}
     for template in raw_taxonomy_templates:
-        TAXONOMY_TEMPLATES[template['rel_link']] = TaxonomyElem(template['title'])
+        TAXONOMY_TEMPLATES[template['rel_link']] = TaxonomyElem(
+            emoji=template['emoji'],
+            title=template['title']
+        )
 
     @classmethod
     def get_taxonomy_elem(cls, key: str) -> TaxonomyElem:
@@ -55,7 +58,7 @@ class QuotePage:
                 if self.url.startswith(const.BASE_URL % key):
                     common_taxonomy_elem = self.get_taxonomy_elem(key)
                     if key == 'music' and '/' in self.url.removeprefix(const.BASE_URL % key):
-                        common_taxonomy_elem = TaxonomyElem('🎵 Песня')
+                        common_taxonomy_elem = TaxonomyElem('🎵', 'Песня')
                         taxonomy_elem_content_title = self.header.rsplit(' — ', 1)[1]
                     else:
                         taxonomy_elem_content_title = self.header.rsplit(' — ', 1)[0]

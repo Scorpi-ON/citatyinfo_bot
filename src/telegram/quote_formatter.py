@@ -11,7 +11,7 @@ class TgQuoteFormatter:
 
     @staticmethod
     def _format_taxonomy_elem(elem: TaxonomyElem) -> str:
-        text = f'**{elem.title}:** '
+        text = f'{elem.emoji} **{elem.title}:** '
         for content_item in elem.content:
             if isinstance(content_item, dict):
                 text += f'[{content_item["text"]}]({content_item["url"]}), '
@@ -31,7 +31,7 @@ class TgQuoteFormatter:
         )
         text += '\n\n'
         text += ' '.join(
-            f'[#{topic.text}]({topic.url})' for topic in self._quote.topics
+            f'[{topic.text}]({topic.url})' for topic in self._quote.topics
         )
         return text
 
