@@ -1,9 +1,9 @@
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, \
     InlineQueryResultArticle, InputTextMessageContent
 
-import const as tg_const
 from ..parser import Quote, QuotePage, utils
-from quote_formatter import TgQuoteFormatter
+from . import const as tg_const
+from .quote_formatter import TgQuoteFormatter
 
 
 class TgPageFormatter:

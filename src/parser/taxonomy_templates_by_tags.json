@@ -1,99 +1,118 @@
 [
   {
     "page_title": "Автор цитаты",
-    "replacement": "©️ Автор",
+    "emoji": "©️",
+    "replacement": "Автор",
     "content": []
   },
   {
     "page_title": "Автор неизвестен",
-    "replacement": "©️ Автор",
+    "emoji": "©️",
+    "replacement": "Автор",
     "content": [
       {"text": "неизвестен", "url": "https://citaty.info/other"}
     ]
   },
   {
     "page_title": "Цитируемый персонаж",
-    "replacement": "💬 Цитируемые персонажи",
+    "emoji": "💬",
+    "replacement": "Цитируемые персонажи",
     "content": []
   },
   {
     "page_title": "Исполнитель",
-    "replacement": "🎤 Исполнители",
+    "emoji": "🎤",
+    "replacement": "Исполнители",
     "content": []
   },
   {
     "page_title": "Цитата из книги",
-    "replacement": "📖 Произведение",
+    "emoji": "📖",
+    "replacement": "Произведение",
     "content": []
   },
   {
     "page_title": "Цитата из фильма",
-    "replacement": "🎬 Фильм",
+    "emoji": "🎬",
+    "replacement": "Фильм",
     "content": []
   },
   {
     "page_title": "Цитата из мультфильма",
-    "replacement": "🧸 Мультфильм",
+    "emoji": "🧸",
+    "replacement": "Мультфильм",
     "content": []
   },
   {
     "page_title": "Цитата из сериала",
-    "replacement": "🍿 Сериал",
+    "emoji": "🍿",
+    "replacement": "Сериал",
     "content": []
   },
   {
     "page_title": "Цитата из телешоу",
-    "replacement": "📺 Телешоу",
+    "emoji": "📺",
+    "replacement": "Телешоу",
     "content": []
   },
   {
     "page_title": "Цитата из спектакля",
-    "replacement": "🎭 Спектакль",
+    "emoji": "🎭",
+    "replacement": "Спектакль",
     "content": []
   },
   {
     "page_title": "Цитата из игры",
-    "replacement": "🎮 Игра",
+    "emoji": "🎮",
+    "replacement": "Игра",
     "content": []
   },
   {
     "page_title": "Цитата из комикса",
-    "replacement": "🦸🏻‍♂️ Комикс",
+    "emoji": "🦸🏻‍♂️",
+    "replacement": "Комикс",
     "content": []
   },
   {
     "page_title": "Цитата из аниме",
-    "replacement": "🥷🏻 Аниме",
+    "emoji": "🥷🏻",
+    "replacement": "Аниме",
     "content": []
   },
   {
     "page_title": "Песня",
-    "replacement": "🎵 Песня",
+    "emoji": "🎵",
+    "replacement": "Песня",
     "content": []
   },
   {
     "page_title": "Самиздат",
-    "replacement": "✍🏻 Самиздат",
+    "emoji": "✍🏻",
+    "replacement": "Самиздат",
     "content": []
   },
   {
     "page_title": "Притча",
-    "replacement": "☯ Притча",
+    "emoji": "☯",
+    "replacement": "Притча",
     "content": []
   },
   {
     "page_title": "Фольклор",
-    "replacement": "📜 Фольклор",
+    "emoji": "📜",
+    "replacement": "Фольклор",
     "content": []
   },
   {
     "page_title": "Эпизод",
-    "replacement": "📀 Эпизод",
+    "emoji": "📀",
+    "replacement": "Эпизод",
     "content": []
   },
   {
     "page_title": "КВН",
-    "replacement": "😂 Команда КВН",
+    "emoji": "😂",
+    "replacement": "Команда КВН",
     "content": []
   }
 ]

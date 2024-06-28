@@ -6,18 +6,18 @@ from selectolax.lexbor import LexborHTMLParser, LexborNode
 from ._quote_types import QuoteTypes
 from ._taxonomy_elem import TaxonomyElem
 from ._topic import Topic
-import utils
+from . import const, utils
 
 
 class Quote:
     """
     Единичная цитата.
     """
-    with open('./taxonomy_templates_by_tags.json') as f:
+    with open('src/parser/taxonomy_templates_by_tags.json', encoding=const.STR_ENCODING) as f:
         raw_taxonomy_templates: list = json.load(f)
     TAXONOMY_TEMPLATES = {}
     for template in raw_taxonomy_templates:
-        TAXONOMY_TEMPLATES[template['title']] = TaxonomyElem(
+        TAXONOMY_TEMPLATES[template['page_title']] = TaxonomyElem(
             title=template['replacement'],
             content=template['content']
         )

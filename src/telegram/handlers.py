@@ -3,10 +3,10 @@ from pyrogram.types import Message, CallbackQuery, InlineQuery
 
 from ..parser import Quote, QuotePage, utils
 from ..parser import const as parser_const
-from quote_formatter import TgQuoteFormatter
-from page_formatter import TgPageFormatter
-import const as tg_const
-from http_tools import http_request
+from .quote_formatter import TgQuoteFormatter
+from .page_formatter import TgPageFormatter
+from .http_tools import http_request
+from . import const as tg_const
 
 
 async def help_(_, msg: Message):

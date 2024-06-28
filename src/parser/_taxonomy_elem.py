@@ -1,6 +1,6 @@
 import functools
 
-import utils
+from . import utils
 
 
 class TaxonomyElem:
@@ -22,7 +22,7 @@ class TaxonomyElem:
         return len(self.content)
 
     def copy(self) -> 'TaxonomyElem':
-        return TaxonomyElem(self.title, self.content)
+        return TaxonomyElem(self.title, self.content.copy())
 
     @functools.cached_property
     def plain_text(self) -> str:

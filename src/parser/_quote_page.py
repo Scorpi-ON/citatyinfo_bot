@@ -5,15 +5,14 @@ from selectolax.lexbor import LexborHTMLParser
 
 from ._quote import Quote
 from ._taxonomy_elem import TaxonomyElem
-import const
-import utils
+from . import const, utils
 
 
 class QuotePage:
     """
     Страница с цитатами.
     """
-    with open('./taxonomy_templates_by_links.json') as f:
+    with open('src/parser/taxonomy_templates_by_links.json', encoding=const.STR_ENCODING) as f:
         raw_taxonomy_templates: list = json.load(f)
     TAXONOMY_TEMPLATES = {}
     for template in raw_taxonomy_templates:

@@ -2,8 +2,8 @@ import httpx
 from pyrogram.enums import ChatAction
 from pyrogram.types import Message, CallbackQuery
 
-import const
 from ..http_client import http_client
+from . import const
 
 
 async def http_request(

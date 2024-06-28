@@ -4,8 +4,8 @@ from dotenv import dotenv_values
 from pyrogram import filters
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler, InlineQueryHandler
 
-from handlers import *
-import const as tg_const
+from .handlers import *
+from . import const as tg_const
 from ..parser import const as parser_const
 
 str_query_filter = filters.create(
@@ -64,7 +64,6 @@ if __name__ == '__main__':
 
     if sys.platform != 'win32':
         import uvloop
-
         uvloop.install()
 
     app = Client(name, api_id, api_hash, bot_token=bot_token, test_mode=TEST_MODE)

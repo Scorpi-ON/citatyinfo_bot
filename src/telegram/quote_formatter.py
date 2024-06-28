@@ -1,6 +1,6 @@
 from pyrogram.types import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton
 
-import const as tg_const
+from . import const as tg_const
 from ..parser import Quote, TaxonomyElem
 from ..parser import const as parser_const
 
