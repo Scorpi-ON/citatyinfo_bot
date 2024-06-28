@@ -1,8 +1,8 @@
 from pyrogram.types import InputMediaPhoto, InlineKeyboardMarkup, InlineKeyboardButton
 
-from . import const as tg_const
-from ..parser import Quote, TaxonomyElem
-from ..parser import const as parser_const
+from .. import const as tg_const
+from src.parser import Quote, TaxonomyElem
+from src.parser import const as parser_const
 
 
 class TgQuoteFormatter:

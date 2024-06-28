@@ -3,8 +3,8 @@ from pyrogram.types import Message, CallbackQuery, InlineQuery
 
 from ..parser import Quote, QuotePage, utils
 from ..parser import const as parser_const
-from .quote_formatter import TgQuoteFormatter
-from .page_formatter import TgPageFormatter
+from .formatters.quote import TgQuoteFormatter
+from .formatters.quote_page import TgPageFormatter
 from .http_tools import http_request
 from . import const as tg_const
 

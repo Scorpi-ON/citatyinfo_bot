@@ -9,7 +9,7 @@ MAX_CALLBACK_ANSWER_LENGTH = 200
 
 QUOTE_SHORT_TEXT_LENGTH = 250
 
-with open('src/telegram/command_templates.json', encoding=const.STR_ENCODING) as f:
+with open('src/telegram/data/command_templates.json', encoding=const.STR_ENCODING) as f:
     MULTIPLE_COMMAND_LINKS: dict = json.load(f)
 for key, value in MULTIPLE_COMMAND_LINKS.items():
     match value[0]:
