@@ -11,7 +11,7 @@ AJAX_URL = BASE_URL % 'ajax/en_body/%s'
 RANDOM_URL = BASE_URL % 'random'
 
 QUOTE_PATTERN = re.compile(
-    fr'^{BASE_URL}(?:random|(?:quote|po|proverb|pritcha|parable)/(\d+)(?:#comment(?:-form|s))?)$'
+    fr'^{BASE_URL[:-2]}(?:random|(?:quote|po|proverb|pritcha|parable)/(\d+)(?:#comment(?:-form|s))?)$'
 )
 ORIGINAL_CALLBACK_PATTERN = re.compile(r'o(\d+)')
 EXPLANATION_CALLBACK_PATTERN = re.compile(r'e(?:quote|po|pritcha|parable)/\d+')

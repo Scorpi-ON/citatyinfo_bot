@@ -11,11 +11,11 @@ class TgPageFormatter:
         self._page = quote_page
 
     @staticmethod
-    def quote_short_text(quote: Quote):
+    def quote_short_text(quote: Quote, include_header=True):
         text = quote.text
         if isinstance(text, tuple):
             text = f'{text[0]}\n\n{text[1]}'
-        if quote.header:
+        if include_header and quote.header:
             text = f'**{quote.header}**\n{text}'
         return utils.trim_text(text, tg_const.QUOTE_SHORT_TEXT_LENGTH)
 
@@ -73,12 +73,11 @@ class TgPageFormatter:
                 formatted_quote = TgQuoteFormatter(quote)
                 results.append(InlineQueryResultArticle(
                     title=quote.header or self._page.header,
-                    description=self.quote_short_text(quote),
+                    description=self.quote_short_text(quote, include_header=False),
                     input_message_content=InputTextMessageContent(
                         message_text=formatted_quote.text,
                         disable_web_page_preview=True
                     ),
-                    thumb_url=quote.image_links[0] if quote.image_links[0] else None,
                     reply_markup=formatted_quote.reply_markup
                 ))
         return results

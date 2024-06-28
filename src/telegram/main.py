@@ -51,7 +51,7 @@ handlers = (
 )
 
 if __name__ == '__main__':
-    TEST_MODE = True
+    TEST_MODE = False
     credentials = dotenv_values()
     api_id = credentials['API_ID']
     api_hash = credentials['API_HASH']
