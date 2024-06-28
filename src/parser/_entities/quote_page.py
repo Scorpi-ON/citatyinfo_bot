@@ -57,7 +57,8 @@ class QuotePage:
             for key in QuotePage.TAXONOMY_TEMPLATES:
                 if self.url.startswith(const.BASE_URL % key):
                     common_taxonomy_elem = self.get_taxonomy_elem(key)
-                    if key == 'music' and '/' in self.url.removeprefix(const.BASE_URL % key):
+                    if key == 'music' and '/' in self.url.removeprefix(const.BASE_URL % key) \
+                            and ' — ' in self.header:
                         common_taxonomy_elem = TaxonomyElem('🎵', 'Песня')
                         taxonomy_elem_content_title = self.header.rsplit(' — ', 1)[1]
                     else:
