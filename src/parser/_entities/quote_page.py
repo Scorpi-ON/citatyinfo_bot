@@ -103,6 +103,9 @@ class QuotePage:
 
     @property
     def pagination(self) -> list[int]:
+        """
+        Номера страниц пагинации, доступные с данной страницы.
+        """
         pages = []
         pagination_tag = self._page_tag.css_first('div.pagination ul.pager-regular')
         if pagination_tag:

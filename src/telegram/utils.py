@@ -16,6 +16,9 @@ async def http_request(
         callback_query: CallbackQuery = None,
         page: str = None
 ) -> httpx.Response | None:
+    """
+    Получает HTML-страницу, правильно взаимодействуя с Telegram (включая обработку исключений).
+    """
     assert not (message and callback_query)
     if message:
         await message.reply_chat_action(ChatAction.TYPING)
@@ -46,6 +49,11 @@ async def http_request(
 
 
 async def refresh_page_quotes(quote_page: QuotePage, page: str):
+    """
+    Обновляет список цитат (не пословиц или притч) на странице, получая их по прямым ссылкам.
+    Нужно, чтобы избежать багов парсинга, связанных с отсутствием элементов таксономии на странице
+    и невозможностью правильно вычленить общий таксономический элемент.
+    """
     response_tasks = {}
     async with asyncio.TaskGroup() as tg:
         for num, quote in enumerate(quote_page.quotes):
