@@ -1,3 +1,5 @@
+import asyncio
+
 from pyrogram import Client
 from pyrogram.types import Message, CallbackQuery, InlineQuery
 
@@ -5,7 +7,7 @@ from ..parser import Quote, QuotePage, utils
 from ..parser import const as parser_const
 from .formatters.quote import TgQuoteFormatter
 from .formatters.quote_page import TgPageFormatter
-from .http_tools import http_request
+from .utils import http_request, refresh_page_quotes
 from . import const as tg_const
 
 
@@ -117,7 +119,9 @@ async def multiple_quotes_inline(_, query: InlineQuery):
             url=url,
             page=page if page != '0' else None
     ):
-        quote_page = TgPageFormatter(QuotePage(html_page=response.text, url=url))
+        raw_quote_page = QuotePage(html_page=response.text, url=url)
+        await refresh_page_quotes(raw_quote_page, page)
+        quote_page = TgPageFormatter(raw_quote_page)
         await query.answer(
             results=quote_page.inline_results(query.query),
             next_offset=quote_page.inline_offset(page)
