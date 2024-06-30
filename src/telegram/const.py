@@ -12,14 +12,7 @@ QUOTE_SHORT_TEXT_LENGTH = 250
 with open('src/telegram/data/command_templates.json', encoding=const.STR_ENCODING) as f:
     MULTIPLE_COMMAND_LINKS: dict = json.load(f)
 for key, value in MULTIPLE_COMMAND_LINKS.items():
-    match value[0]:
-        case 'BASE_URL':
-            value[0] = const.BASE_URL
-        case 'CATEGORY_URL':
-            value[0] = const.CATEGORY_URL
-        case 'TOP_RATING_URL':
-            value[0] = const.TOP_RATING_URL
-    MULTIPLE_COMMAND_LINKS[key] = value[0] % value[1]
+    MULTIPLE_COMMAND_LINKS[key] = const.BASE_URL % value
 
 BAD_REQUEST_MSG = 'Не удалось обработать данный запрос. 😔'
 NOTHING_FOUND_MSG = 'По этому запросу ничего не найдено. 🤷🏻‍♂️'

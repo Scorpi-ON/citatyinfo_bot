@@ -3,8 +3,6 @@ import re
 STR_ENCODING = 'utf-8'
 
 BASE_URL = 'https://citaty.info/%s'
-TOP_RATING_URL = BASE_URL % 'rating/%s'
-CATEGORY_URL = BASE_URL % '%s/quotes'
 SEARCH_URL = BASE_URL % 'search/site/%s'
 QUOTE_URL = BASE_URL % 'quote/%s'
 AJAX_URL = BASE_URL % 'ajax/en_body/%s'

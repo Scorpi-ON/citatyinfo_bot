@@ -120,7 +120,7 @@ async def multiple_quotes_inline(_, query: InlineQuery):
             url=url,
             page=page if page != '0' else None
     ):
-        raw_quote_page = QuotePage(html_page=response.text, url=url)
+        raw_quote_page = QuotePage(html_page=response.text)
         if refresh_flag:
             await tg_utils.refresh_page_quotes(raw_quote_page, page)
         quote_page = TgPageFormatter(raw_quote_page)
@@ -155,7 +155,7 @@ async def turn_page(_, query: CallbackQuery):
             callback_query=query,
             page=page if page != '0' else None
     ):
-        quote_page = TgPageFormatter(QuotePage(html_page=response.text, url=url))
+        quote_page = TgPageFormatter(QuotePage(html_page=response.text))
         await query.message.edit(
             text=quote_page.text,
             reply_markup=quote_page.reply_markup,
