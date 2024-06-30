@@ -53,13 +53,13 @@ class Quote:
     ):
         assert html_page and not article_tag \
                or article_tag and not html_page
-        self._parable_header = None
+        self._parable_header_ = None
         if html_page:
             tree = LexborHTMLParser(html_page).body
             article_tag = tree.css_first('article')
-            self._parable_header = tree.css_first('h1')
+            self._parable_header_ = tree.css_first('h1')
             if self._parable_header is not None:  # Без проверки ломаются случайные цитаты
-                self._parable_header = self._parable_header.text()
+                self._parable_header_ = self._parable_header_.text()
         self._quote_with_meta_tag = article_tag
         self._quote_tag = article_tag.css_first('div.node__content')
 
@@ -129,7 +129,7 @@ class Quote:
         """
         if self.type == QuoteTypes.pritcha:
             return utils.optimize_text(
-                self._parable_header or self._quote_tag.css_first('h2').text()
+                self._parable_header_ or self._quote_tag.css_first('h2').text()
             )
 
     @property
