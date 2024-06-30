@@ -1,11 +1,12 @@
 from pyrogram import Client
 from pyrogram.types import Message, CallbackQuery, InlineQuery
 
-from ..parser import Quote, QuotePage, utils
+from ..parser import Quote, QuotePage
+from ..parser import utils as parser_utils
 from ..parser import const as parser_const
 from .formatters.quote import TgQuoteFormatter
 from .formatters.quote_page import TgPageFormatter
-from . import utils
+from . import utils as tg_utils
 from . import const as tg_const
 
 
@@ -30,7 +31,7 @@ async def single_quote(_, msg: Message):
         url = parser_const.RANDOM_URL
     else:
         url = msg.text
-    if response := await utils.http_request(url, msg):
+    if response := await tg_utils.http_request(url, msg):
         quote = TgQuoteFormatter(Quote(html_page=response.text))
         if quote.media:
             quote_image_msg_group = await msg.reply_media_group(
@@ -50,7 +51,7 @@ async def quote_by_callback(app: Client, query: CallbackQuery):
     """
     Цитата по относительной ссылке из коллбэка.
     """
-    if response := await utils.http_request(
+    if response := await tg_utils.http_request(
             url=parser_const.BASE_URL % query.data,
             callback_query=query
     ):
@@ -86,7 +87,7 @@ async def multiple_quotes(_, msg: Message):
         url = msg.text
     else:
         url = parser_const.SEARCH_URL % msg.text
-    if response := await utils.http_request(
+    if response := await tg_utils.http_request(
             url=url,
             message=msg
     ):
@@ -115,13 +116,13 @@ async def multiple_quotes_inline(_, query: InlineQuery):
     else:
         url = parser_const.SEARCH_URL % query.query
     page = query.offset or None
-    if response := await utils.http_request(
+    if response := await tg_utils.http_request(
             url=url,
             page=page if page != '0' else None
     ):
         raw_quote_page = QuotePage(html_page=response.text, url=url)
         if refresh_flag:
-            await utils.refresh_page_quotes(raw_quote_page, page)
+            await tg_utils.refresh_page_quotes(raw_quote_page, page)
         quote_page = TgPageFormatter(raw_quote_page)
         await query.answer(
             results=quote_page.inline_results(query.query),
@@ -149,7 +150,7 @@ async def turn_page(_, query: CallbackQuery):
         url = request
     else:
         url = parser_const.SEARCH_URL % request
-    if response := await utils.http_request(
+    if response := await tg_utils.http_request(
             url=url,
             callback_query=query,
             page=page if page != '0' else None
@@ -168,14 +169,14 @@ async def original(_, query: CallbackQuery):
     по ID из коллбэка.
     """
     quote_id = query.data[1:]
-    if response := await utils.http_request(
+    if response := await tg_utils.http_request(
             url=parser_const.AJAX_URL % quote_id,
             callback_query=query
     ):
         original_text = Quote.get_original_text(
             html_page=response.json()[1]['data']
         )
-        original_text = utils.trim_text(original_text, tg_const.MAX_CALLBACK_ANSWER_LENGTH)
+        original_text = parser_utils.trim_text(original_text, tg_const.MAX_CALLBACK_ANSWER_LENGTH)
         await query.answer(
             text=original_text,
             show_alert=True,
@@ -189,12 +190,12 @@ async def explanation(_, query: CallbackQuery):
     по относительной ссылке из коллбэка.
     """
     rel_link = query.data[1:]
-    if response := await utils.http_request(
+    if response := await tg_utils.http_request(
             url=parser_const.BASE_URL % rel_link,
             callback_query=query
     ):
         quote = Quote(html_page=response.text)
-        explanation_text = utils.trim_text(quote.explanation, tg_const.MAX_CALLBACK_ANSWER_LENGTH)
+        explanation_text = parser_utils.trim_text(quote.explanation, tg_const.MAX_CALLBACK_ANSWER_LENGTH)
         await query.answer(
             text=explanation_text,
             show_alert=True,
