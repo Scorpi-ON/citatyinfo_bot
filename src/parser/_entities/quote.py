@@ -32,7 +32,7 @@ class Quote:
     #     )
 
     @classmethod
-    def get_taxonomy_elem(cls, key: str) -> TaxonomyElem:
+    def _get_taxonomy_elem(cls, key: str) -> TaxonomyElem:
         """
         Копия элемента таксономии для редактирования.
         """
@@ -123,7 +123,7 @@ class Quote:
         return self._quote_tag.css_matches('div.quote__original')
 
     @functools.cached_property
-    def parable_header(self) -> str | None:
+    def _parable_header(self) -> str | None:
         """
         Название притчи, если это притча.
         """
@@ -140,7 +140,7 @@ class Quote:
         if self.type == QuoteTypes.quote:
             series_metadata_tag = self._quote_tag.css_first('div.node__series')
             if series_metadata_tag is not None:
-                taxonomy_elem = self.get_taxonomy_elem('Эпизод')
+                taxonomy_elem = self._get_taxonomy_elem('Эпизод')
                 for series_tag in series_metadata_tag.css('div.field-item'):
                     if link_tag := series_tag.css_first('a'):
                         taxonomy_elem.add_content(link_tag.text(), link_tag.attributes['href'])
@@ -157,7 +157,7 @@ class Quote:
         #     if self._tree.css_matches('div#breadcrumbs') and self.rel_link:
         #         for key in QuotePage.TAXONOMY_TEMPLATES:
         #             if self.rel_link.startswith(key):
-        #                 common_taxonomy_elem = self.get_taxonomy_elem(key)
+        #                 common_taxonomy_elem = self._get_taxonomy_elem(key)
         #                 if key == 'music' and '/' in self.rel_link.removeprefix(key) \
         #                         and ' — ' in self.header:
         #                     common_taxonomy_elem = TaxonomyElem('🎵', 'Песня')
@@ -168,8 +168,8 @@ class Quote:
         #     return common_taxonomy_elem
         taxonomy_elems = []
         if self.type == QuoteTypes.pritcha:
-            taxonomy_elem = self.get_taxonomy_elem('Притча')
-            taxonomy_elems.append(taxonomy_elem.add_content(self.parable_header))
+            taxonomy_elem = self._get_taxonomy_elem('Притча')
+            taxonomy_elems.append(taxonomy_elem.add_content(self._parable_header))
         else:
             taxonomy_tags = self._quote_with_meta_tag.css('div.node__content > div.field-type-taxonomy-term-reference')
             for tag in taxonomy_tags:
@@ -182,7 +182,7 @@ class Quote:
                             key = 'Автор неизвестен'
                         else:
                             key = 'Фольклор'
-                    taxonomy_elem = self.get_taxonomy_elem(key)
+                    taxonomy_elem = self._get_taxonomy_elem(key)
                     if key != 'Автор неизвестен':
                         for link_tag in tag.css('a'):
                             taxonomy_elem.add_content(link_tag.text(), link_tag.attributes['href'])
@@ -198,7 +198,7 @@ class Quote:
         """
         match self.type:
             case QuoteTypes.pritcha:
-                return f'Притча «{self.parable_header}»'
+                return f'Притча «{self._parable_header}»'
             case QuoteTypes.po:
                 for taxonomy_elem in self.taxonomy:
                     if taxonomy_elem.title == 'Фольклор':
