@@ -58,7 +58,7 @@ class Quote:
             tree = LexborHTMLParser(html_page).body
             article_tag = tree.css_first('article')
             self._parable_header_ = tree.css_first('h1')
-            if self._parable_header is not None:  # Без проверки ломаются случайные цитаты
+            if self._parable_header_ is not None:  # Без проверки ломаются случайные цитаты
                 self._parable_header_ = self._parable_header_.text()
         self._quote_with_meta_tag = article_tag
         self._quote_tag = article_tag.css_first('div.node__content')
@@ -167,28 +167,41 @@ class Quote:
         #                 common_taxonomy_elem.add_content(taxonomy_elem_content_title, const.BASE_URL % self.rel_link)
         #     return common_taxonomy_elem
         taxonomy_elems = []
-        if self.type == QuoteTypes.pritcha:
-            taxonomy_elem = self._get_taxonomy_elem('Притча')
-            taxonomy_elems.append(taxonomy_elem.add_content(self._parable_header))
-        else:
-            taxonomy_tags = self._quote_with_meta_tag.css('div.node__content > div.field-type-taxonomy-term-reference')
-            for tag in taxonomy_tags:
-                if link_tag := tag.css_first('a'):
-                    key = link_tag.attributes.get('title')  # Бывает, что находятся пустые div'ы без ссылок
-                    if not key:
-                        if '/kvn/' in link_tag.attributes['href']:
-                            key = 'КВН'
-                        elif link_tag.attributes['href'] == '/other':
-                            key = 'Автор неизвестен'
-                        else:
-                            key = 'Фольклор'
-                    taxonomy_elem = self._get_taxonomy_elem(key)
-                    if key != 'Автор неизвестен':
-                        for link_tag in tag.css('a'):
-                            taxonomy_elem.add_content(link_tag.text(), link_tag.attributes['href'])
-                    taxonomy_elems.append(taxonomy_elem)
-            if series := self._series:
-                taxonomy_elems.append(series)
+        match self.type:
+            case QuoteTypes.pritcha:
+                taxonomy_elem = self._get_taxonomy_elem('Притча')
+                taxonomy_elem.add_content(self._parable_header)
+                taxonomy_elems.append(taxonomy_elem)
+            case QuoteTypes.po:
+                taxonomy_elem = self._get_taxonomy_elem('Фольклор')
+                taxonomy_link = self._quote_with_meta_tag.css_first(
+                    'div.field-type-taxonomy-term-reference a'
+                )
+                taxonomy_elem.add_content(
+                    text=taxonomy_link.text(),
+                    url=taxonomy_link.attributes['href']
+                )
+                taxonomy_elems.append(taxonomy_elem)
+            case _:
+                taxonomy_tags = self._quote_with_meta_tag.css(
+                    'div.node__content > div.field-type-taxonomy-term-reference')
+                for tag in taxonomy_tags:
+                    if link_tag := tag.css_first('a'):  # Бывает, что находятся пустые div'ы без ссылок
+                        key = link_tag.attributes.get('title')
+                        if not key:
+                            if '/kvn/' in link_tag.attributes['href']:
+                                key = 'КВН'
+                            elif link_tag.attributes['href'] == '/other':
+                                key = 'Автор неизвестен'
+                            else:
+                                raise ValueError(key)
+                        taxonomy_elem = self._get_taxonomy_elem(key)
+                        if key != 'Автор неизвестен':
+                            for link_tag in tag.css('a'):
+                                taxonomy_elem.add_content(link_tag.text(), link_tag.attributes['href'])
+                        taxonomy_elems.append(taxonomy_elem)
+                if series := self._series:
+                    taxonomy_elems.append(series)
         return taxonomy_elems
 
     @functools.cached_property
