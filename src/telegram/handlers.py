@@ -91,7 +91,7 @@ async def multiple_quotes(_, msg: Message):
             url=url,
             message=msg
     ):
-        quote_page = TgPageFormatter(QuotePage(html_page=response.text, url=url))
+        quote_page = TgPageFormatter(QuotePage(html_page=response.text))
         await msg.reply(
             text=quote_page.text,
             quote=True,

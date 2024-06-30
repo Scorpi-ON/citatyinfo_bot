@@ -2,7 +2,7 @@ import functools
 
 from selectolax.lexbor import LexborHTMLParser
 
-from .. import const, utils
+from .. import utils
 from .quote import Quote
 
 
@@ -10,8 +10,7 @@ class QuotePage:
     """
     Страница с цитатами.
     """
-    def __init__(self, html_page: str, url: str):
-        self.rel_link = url.removeprefix(const.BASE_URL % '')
+    def __init__(self, html_page: str):
         self._tree = LexborHTMLParser(html_page)
         self._page_tag = self._tree.css_first('main > div')
 
