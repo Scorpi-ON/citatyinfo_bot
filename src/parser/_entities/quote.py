@@ -182,7 +182,7 @@ class Quote:
                     url=taxonomy_link.attributes['href']
                 )
                 taxonomy_elems.append(taxonomy_elem)
-            case _:
+            case QuoteTypes.quote:
                 taxonomy_tags = self._quote_with_meta_tag.css(
                     'div.node__content > div.field-type-taxonomy-term-reference')
                 for tag in taxonomy_tags:
