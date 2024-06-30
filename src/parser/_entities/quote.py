@@ -213,9 +213,7 @@ class Quote:
             case QuoteTypes.pritcha:
                 return f'Притча «{self._parable_header}»'
             case QuoteTypes.po:
-                for taxonomy_elem in self.taxonomy:
-                    if taxonomy_elem.title == 'Фольклор':
-                        return taxonomy_elem.plain_content
+                return self.taxonomy[0].plain_content
             case QuoteTypes.quote:
                 authors = source = characters = None
                 for taxonomy_elem in self.taxonomy:
