@@ -29,7 +29,7 @@ class QuotePage:
         return cls.TAXONOMY_TEMPLATES[key].copy()
 
     def __init__(self, html_page: str, url: str):
-        self.url = url
+        self.rel_link = url.removeprefix(const.BASE_URL % '')
         self._tree = LexborHTMLParser(html_page)
         self._page_tag = self._tree.css_first('main > div')
 
@@ -52,12 +52,11 @@ class QuotePage:
         к цитатам самостоятельно.
         """
         common_taxonomy_elem = None
-        if self._tree.css_matches('div#breadcrumbs') \
-                and self.url and self.url.startswith(const.BASE_URL % ''):
+        if self._tree.css_matches('div#breadcrumbs') and self.rel_link:
             for key in QuotePage.TAXONOMY_TEMPLATES:
-                if self.url.startswith(const.BASE_URL % key):
+                if self.rel_link.startswith(key):
                     common_taxonomy_elem = self.get_taxonomy_elem(key)
-                    if key == 'music' and '/' in self.url.removeprefix(const.BASE_URL % key) \
+                    if key == 'music' and '/' in self.rel_link.removeprefix(key) \
                             and ' — ' in self.header:
                         common_taxonomy_elem = TaxonomyElem('🎵', 'Песня')
                         taxonomy_elem_content_title = self.header.rsplit(' — ', 1)[1]
