@@ -106,9 +106,11 @@ async def multiple_quotes_inline(_, query: InlineQuery):
     """
     if not query.query:
         return
+    refresh_flag = False
     if query.query in tg_const.MULTIPLE_COMMAND_LINKS:
         url = tg_const.MULTIPLE_COMMAND_LINKS[query.query]
     elif parser_const.COMMON_URL_PATTERN.match(query.query):
+        refresh_flag = True
         url = query.query
     else:
         url = parser_const.SEARCH_URL % query.query
@@ -118,7 +120,8 @@ async def multiple_quotes_inline(_, query: InlineQuery):
             page=page if page != '0' else None
     ):
         raw_quote_page = QuotePage(html_page=response.text, url=url)
-        await utils.refresh_page_quotes(raw_quote_page, page)
+        if refresh_flag:
+            await utils.refresh_page_quotes(raw_quote_page, page)
         quote_page = TgPageFormatter(raw_quote_page)
         await query.answer(
             results=quote_page.inline_results(query.query),

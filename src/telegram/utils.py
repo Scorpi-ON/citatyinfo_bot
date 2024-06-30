@@ -57,7 +57,7 @@ async def refresh_page_quotes(quote_page: QuotePage, page: str):
     response_tasks = {}
     async with asyncio.TaskGroup() as tg:
         for num, quote in enumerate(quote_page.quotes):
-            if quote.type is QuoteTypes.quote:
+            if quote.type == QuoteTypes.quote:
                 response_tasks[num] = tg.create_task(http_request(
                     url=parser_const.BASE_URL % quote.rel_link,
                     page=page if page != '0' else None

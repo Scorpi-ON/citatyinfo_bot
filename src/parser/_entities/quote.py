@@ -121,7 +121,7 @@ class Quote:
         """
         Название притчи, если это притча.
         """
-        if self.type is QuoteTypes.pritcha:
+        if self.type == QuoteTypes.pritcha:
             return utils.optimize_text(
                 self._parable_header or self._quote_tag.css_first('h2').text()
             )
@@ -131,7 +131,7 @@ class Quote:
         """
         Дополнительные метаданные для сериала (сезон, серия, эпизод и т. д.), если это сериал
         """
-        if self.type is QuoteTypes.quote:
+        if self.type == QuoteTypes.quote:
             series_metadata_tag = self._quote_tag.css_first('div.node__series')
             if series_metadata_tag is not None:
                 taxonomy_elem = self.get_taxonomy_elem('Эпизод')
@@ -150,7 +150,7 @@ class Quote:
         taxonomy_elems = []
         if self._common_taxonomy_elem:
             taxonomy_elems.append(self._common_taxonomy_elem)
-        if self.type is QuoteTypes.pritcha:
+        if self.type == QuoteTypes.pritcha:
             taxonomy_elem = self.get_taxonomy_elem('Притча')
             taxonomy_elems.append(taxonomy_elem.add_content(self.parable_header))
         else:
