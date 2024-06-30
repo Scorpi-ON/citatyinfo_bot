@@ -62,7 +62,7 @@ class QuotePage:
                         taxonomy_elem_content_title = self.header.rsplit(' — ', 1)[1]
                     else:
                         taxonomy_elem_content_title = self.header.rsplit(' — ', 1)[0]
-                    common_taxonomy_elem.add_content(taxonomy_elem_content_title, self.url)
+                    common_taxonomy_elem.add_content(taxonomy_elem_content_title, const.BASE_URL % self.rel_link)
         return common_taxonomy_elem
 
     @functools.cached_property
