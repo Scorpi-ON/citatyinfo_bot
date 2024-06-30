@@ -9,9 +9,7 @@
     "page_title": "Автор неизвестен",
     "emoji": "©️",
     "replacement": "Автор",
-    "content": [
-      {"text": "неизвестен", "url": "https://citaty.info/other"}
-    ]
+    "content": ["неизвестен"]
   },
   {
     "page_title": "Цитируемый персонаж",
