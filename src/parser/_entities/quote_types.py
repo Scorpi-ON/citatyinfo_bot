@@ -10,7 +10,7 @@ class QuoteTypes(enum.Enum):
         ``po``: пословица / поговорка — https://citaty.info/po/247673
         (подходят также цитаты вида https://citaty.info/proverb/110707, если вместо ``proverb`` использовать ``po``)
 
-        ``patch``: притча — https://citaty.info/pritcha/121736
+        ``pritcha``: притча — https://citaty.info/pritcha/121736
     """
     quote = 0
     po = 1
