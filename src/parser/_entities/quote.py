@@ -22,6 +22,14 @@ class Quote:
             title=template['replacement'],
             content=template['content']
         )
+    # with open('src/parser/data/taxonomy_templates_by_links.json', encoding=const.STR_ENCODING) as f:
+    #     raw_taxonomy_templates: list = json.load(f)
+    # TAXONOMY_TEMPLATES = {}
+    # for template in raw_taxonomy_templates:
+    #     TAXONOMY_TEMPLATES[template['rel_link']] = TaxonomyElem(
+    #         emoji=template['emoji'],
+    #         title=template['title']
+    #     )
 
     @classmethod
     def get_taxonomy_elem(cls, key: str) -> TaxonomyElem:
@@ -41,13 +49,11 @@ class Quote:
     def __init__(
             self,
             html_page: str = None,
-            article_tag: LexborNode = None,
-            common_taxonomy_elem: TaxonomyElem = None
+            article_tag: LexborNode = None
     ):
-        assert html_page and not (article_tag or common_taxonomy_elem) \
+        assert html_page and not article_tag \
                or article_tag and not html_page
         self._parable_header = None
-        self._common_taxonomy_elem = common_taxonomy_elem
         if html_page:
             tree = LexborHTMLParser(html_page).body
             article_tag = tree.css_first('article')
@@ -147,17 +153,28 @@ class Quote:
         """
         Все элементы таксономии цитаты.
         """
+        #     common_taxonomy_elem = None
+        #     if self._tree.css_matches('div#breadcrumbs') and self.rel_link:
+        #         for key in QuotePage.TAXONOMY_TEMPLATES:
+        #             if self.rel_link.startswith(key):
+        #                 common_taxonomy_elem = self.get_taxonomy_elem(key)
+        #                 if key == 'music' and '/' in self.rel_link.removeprefix(key) \
+        #                         and ' — ' in self.header:
+        #                     common_taxonomy_elem = TaxonomyElem('🎵', 'Песня')
+        #                     taxonomy_elem_content_title = self.header.rsplit(' — ', 1)[1]
+        #                 else:
+        #                     taxonomy_elem_content_title = self.header.rsplit(' — ', 1)[0]
+        #                 common_taxonomy_elem.add_content(taxonomy_elem_content_title, const.BASE_URL % self.rel_link)
+        #     return common_taxonomy_elem
         taxonomy_elems = []
-        if self._common_taxonomy_elem:
-            taxonomy_elems.append(self._common_taxonomy_elem)
         if self.type == QuoteTypes.pritcha:
             taxonomy_elem = self.get_taxonomy_elem('Притча')
             taxonomy_elems.append(taxonomy_elem.add_content(self.parable_header))
         else:
             taxonomy_tags = self._quote_with_meta_tag.css('div.node__content > div.field-type-taxonomy-term-reference')
             for tag in taxonomy_tags:
-                if link_tag := tag.css_first('a'):  # Бывает, что находятся пустые div'ы без ссылок
-                    key = link_tag.attributes.get('title')
+                if link_tag := tag.css_first('a'):
+                    key = link_tag.attributes.get('title')  # Бывает, что находятся пустые div'ы без ссылок
                     if not key:
                         if '/kvn/' in link_tag.attributes['href']:
                             key = 'КВН'
