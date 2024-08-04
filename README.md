@@ -64,6 +64,7 @@
 pip install -r requirements.txt
 ```
 Под Windows uvloop не установится, но это не проблема. Все инструменты тестировались на последних версиях с Python 3.11.
+
 2. Создать в корне проекта файл `.env` следующего содержания (без фигурных скобок):
 ```
 API_ID={API ID приложения Telegram (https://my.telegram.org/apps)}
